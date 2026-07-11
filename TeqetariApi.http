@@ -1,0 +1,6 @@
+@TeqetariApi_HostAddress = http://localhost:5134
+
+GET {{TeqetariApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
