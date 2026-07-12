@@ -1,4 +1,4 @@
-namespace TmsApi.Enums;
+namespace TeqetariApi.Enums;
 
 public enum GovernmentSector
 {

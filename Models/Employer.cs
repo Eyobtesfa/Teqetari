@@ -11,35 +11,50 @@ public class Employer
         get;
         set => field = (!string.IsNullOrWhiteSpace(value) && value.Contains("@"))
             ? value
-            : throw new ArgumentException("A valid email address is required.");
+            : throw new InvalidModelFieldException(
+                nameof(Email),
+                value ?? "null",
+                "A valid email address is required.");
     }
     public required string PhoneNumber
     {
         get;
-        set => field = !string.IsNullOrWhiteSpace(value)
+        set => field = (!string.IsNullOrWhiteSpace(value) && value.Length == 10)
             ? value
-            : throw new ArgumentException("Phone number cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(PhoneNumber),
+                value ?? string.Empty,
+                "Phone number must be exactly 10 digits.");
     }
     public required string City
     {
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("City cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(City),
+                value ?? string.Empty,
+                "City cannot be empty.");
     }
     public required string SubCity
     {
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("SubCity cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(SubCity),
+                value ?? string.Empty,
+                "SubCity cannot be empty.");
     }
     public required string Woreda
     {
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("Woreda cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(Woreda),
+                value ?? string.Empty,
+                "Woreda cannot be empty.");
     }
 
 }
@@ -53,14 +68,20 @@ public class Household : Employer
 
         set => field = !string.IsNullOrWhiteSpace(value)
         ? value
-        : throw new ArgumentException("First name cannot be whitespace.");
+        : throw new InvalidModelFieldException(
+            nameof(FirstName),
+            value ?? string.Empty,
+            "First name cannot be whitespace.");
     }
     public required string LastName
     {
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
         ? value
-        : throw new ArgumentException("Last name cannot be whitespace.");
+        : throw new InvalidModelFieldException(
+            nameof(LastName),
+            value ?? string.Empty,
+            "Last name cannot be whitespace.");
     }
 
     public required string NationalIdNumber
@@ -68,14 +89,20 @@ public class Household : Employer
         get;
         set => field = (!string.IsNullOrWhiteSpace(value) && value.Length >= 16)
             ? value
-            : throw new ArgumentException("Invalid National ID Number");
+            : throw new InvalidModelFieldException(
+                nameof(NationalIdNumber),
+                value ?? string.Empty,
+                "Invalid National ID Number");
     }
     public int NumberOfFamilyMembers
     {
         get;
         set => field = value > 0
         ? value
-        : throw new ArgumentOutOfRangeException(nameof(value), "Family size must be at least 1.");
+        : throw new ValueOutOfRangeException(
+            nameof(NumberOfFamilyMembers),
+            value,
+            "Family size must be at least 1.");
     }
     public bool HasPets { get; set; } = false;
     public string? SpecialInstruction { get; set; }
@@ -90,35 +117,50 @@ public class PrivateCompany : Employer
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("Company name cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(CompanyName),
+                value ?? string.Empty,
+                "Company name cannot be empty.");
     }
     public required string TradeLicenseNumber
     {
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("Trade license number cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(TradeLicenseNumber),
+                value ?? string.Empty,
+                "Trade license number cannot be empty.");
     }
     public required string TaxRegistrationNumber
     {
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("Tax registration number (TIN) cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(TaxRegistrationNumber),
+                value ?? string.Empty,
+                "Tax registration number (TIN) cannot be empty.");
     }
     public required string ContactPersonName
     {
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("Contact person name cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(ContactPersonName),
+                value ?? string.Empty,
+                "Contact person name cannot be empty.");
     }
     public required string ContactPersonRole
     {
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("Contact person role cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(ContactPersonRole),
+                value ?? string.Empty,
+                "Contact person role cannot be empty.");
     }
     public required CompanySize Size { get; set; }
 
@@ -131,7 +173,10 @@ public class GovernmentOrganization : Employer
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("Agency name cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(AgencyName),
+                value ?? string.Empty,
+                "Agency name cannot be empty.");
     }
     public required GovernmentSector Sector { get; set; }
     public required string Department { get; set; }
@@ -140,13 +185,19 @@ public class GovernmentOrganization : Employer
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("Authorized officer name cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(AuthorizedOfficerName),
+                value ?? string.Empty,
+                "Authorized officer name cannot be empty.");
     }
     public required string OfficialLetterRefNumber
     {
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
-            : throw new ArgumentException("Official letter reference number cannot be empty.");
+            : throw new InvalidModelFieldException(
+                nameof(OfficialLetterRefNumber),
+                value ?? string.Empty,
+                "Official letter reference number cannot be empty.");
     }
 }

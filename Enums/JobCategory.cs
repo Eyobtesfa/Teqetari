@@ -9,3 +9,14 @@ public enum JobCategory
     babysitting = 5
 
 }
+public enum SkillCategory
+{
+    ChildcareAndNanny = 1,
+    HousekeepingAndCleaning = 2,
+    CookingAndCulinary = 3,
+    ElderlyCare = 4,
+    DrivingAndChauffeur = 5,
+    GardeningAndLandscaping = 6,
+    SecurityGuarding = 7,
+    OfficeAdministration = 8
+}
