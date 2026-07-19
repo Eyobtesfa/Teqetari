@@ -1,12 +1,29 @@
+using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
+using TeqetariApi.Data;
+
+
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddOpenApi();
+builder.Services.AddDbContext<TeqetariDbContext>(options =>
+options.UseNpgsql(builder.Configuration.GetConnectionString("TeqetariDatabase")));
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
+
 
 app.UseHttpsRedirection();
 

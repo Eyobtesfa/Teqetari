@@ -111,4 +111,5 @@ public class Employee
     public bool IsAvailable { get; set; } = true;
     public bool BackgroundCheckPassed { get; set; } = false;
     public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
+    public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
 }

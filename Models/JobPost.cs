@@ -5,7 +5,7 @@ public class JobPost
 {
     public int Id { get; set; }
     public int EmployerId { get; set; }
-    public Employer Employer { get; set; } = null!;
+
     public required string Title
     {
         get;
@@ -51,4 +51,6 @@ public class JobPost
                 value,
                 "Expiration date must be in the future.");
     }
+    public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
+    public Employer Employer { get; set; } = null!;
 }

@@ -5,8 +5,10 @@ public class PlacementContract
     public int Id { get; set; }
     public int EmployerId { get; set; }
     public int EmployeeId { get; set; }
+    public int JobPostId { get; set; }
     public Employer Employer { get; set; } = null!;
     public Employee Employee { get; set; } = null!;
+    public JobPost JobPost { get; set; } = null!;
     public required DateTime StartDate { get; set; } = DateTime.UtcNow;
     public required DateTime EndDate
     {

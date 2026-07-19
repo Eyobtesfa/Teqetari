@@ -6,10 +6,13 @@ public class JobApplication
     public int JobPostId { get; set; }
     public JobPost JobPost { get; set; } = null!;
     public int EmployeeId { get; set; }
-    public Employee Employee { get; set; } = null!;
+
     public required DateTime AppliedAt { get; set; } = DateTime.UtcNow;
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
     public string? CoverLetter { get; set; }
+
+
+    public Employee Employee { get; set; } = null!;
 }
 
 public enum ApplicationStatus

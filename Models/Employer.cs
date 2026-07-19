@@ -56,6 +56,7 @@ public class Employer
                 value ?? string.Empty,
                 "Woreda cannot be empty.");
     }
+    public ICollection<JobPost> JobPosts { get; set; } = new List<JobPost>();
 
 }
 
