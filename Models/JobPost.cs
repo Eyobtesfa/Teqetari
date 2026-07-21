@@ -27,7 +27,7 @@ public class JobPost
                 "Description cannot be empty.");
     }
     public required JobCategory Category { get; set; }
-    public required SkillCategory RequiredSkills { get; set; }
+    public required List<string> RequiredSkills { get; set; }
     public required decimal OfferedSalary
     {
         get;

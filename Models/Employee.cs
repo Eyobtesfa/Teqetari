@@ -87,7 +87,7 @@ public class Employee
                 value ?? string.Empty,
                 "Woreda cannot be empty.");
     }
-    public int YearsOfExperience
+    public required int YearsOfExperience
     {
         get;
         set => field = (value >= 0 && value <= 50)
@@ -107,7 +107,8 @@ public class Employee
                 value,
                 "Expected salary cannot be a negative amount.");
     }
-    public required SkillCategory Skills { get; set; }
+    public JobCategory JobCategory { get; set; }
+    public List<string>? Skills { get; set; }
     public bool IsAvailable { get; set; } = true;
     public bool BackgroundCheckPassed { get; set; } = false;
     public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;

@@ -56,6 +56,7 @@ public class Employer
                 value ?? string.Empty,
                 "Woreda cannot be empty.");
     }
+    public List<string>? SpecialInstruction { get; set; }
     public ICollection<JobPost> JobPosts { get; set; } = new List<JobPost>();
 
 }
@@ -106,7 +107,7 @@ public class Household : Employer
             "Family size must be at least 1.");
     }
     public bool HasPets { get; set; } = false;
-    public string? SpecialInstruction { get; set; }
+
 
 }
 
@@ -169,15 +170,15 @@ public class PrivateCompany : Employer
 
 public class GovernmentOrganization : Employer
 {
-    public required string AgencyName
+    public required string OrganizationName
     {
         get;
         set => field = !string.IsNullOrWhiteSpace(value)
             ? value
             : throw new InvalidModelFieldException(
-                nameof(AgencyName),
+                nameof(OrganizationName),
                 value ?? string.Empty,
-                "Agency name cannot be empty.");
+                "Organization name cannot be empty.");
     }
     public required GovernmentSector Sector { get; set; }
     public required string Department { get; set; }
