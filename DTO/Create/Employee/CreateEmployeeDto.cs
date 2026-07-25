@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using TeqetariApi.Enums;
 
 
-namespace TeqetariApi.DTO;
+namespace TeqetariApi.DTO.Create.Employee;
 
 public record CreateEmployeeDto
 {

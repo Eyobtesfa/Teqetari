@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -28,7 +29,8 @@ namespace TeqetariApi.Migrations
                     Woreda = table.Column<string>(type: "text", nullable: false),
                     YearsOfExperience = table.Column<int>(type: "integer", nullable: false),
                     ExpectedSalary = table.Column<decimal>(type: "numeric", nullable: false),
-                    Skills = table.Column<int>(type: "integer", nullable: false),
+                    JobCategory = table.Column<int>(type: "integer", nullable: false),
+                    Skills = table.Column<List<string>>(type: "text[]", nullable: true),
                     IsAvailable = table.Column<bool>(type: "boolean", nullable: false),
                     BackgroundCheckPassed = table.Column<bool>(type: "boolean", nullable: false),
                     RegisteredAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -49,7 +51,8 @@ namespace TeqetariApi.Migrations
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
                     City = table.Column<string>(type: "text", nullable: false),
                     SubCity = table.Column<string>(type: "text", nullable: false),
-                    Woreda = table.Column<string>(type: "text", nullable: false)
+                    Woreda = table.Column<string>(type: "text", nullable: false),
+                    SpecialInstruction = table.Column<List<string>>(type: "text[]", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -66,7 +69,7 @@ namespace TeqetariApi.Migrations
                     Title = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     Category = table.Column<int>(type: "integer", nullable: false),
-                    RequiredSkills = table.Column<int>(type: "integer", nullable: false),
+                    RequiredSkills = table.Column<List<string>>(type: "text[]", nullable: false),
                     OfferedSalary = table.Column<decimal>(type: "numeric", nullable: false),
                     Location = table.Column<string>(type: "text", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
@@ -80,35 +83,6 @@ namespace TeqetariApi.Migrations
                         name: "FK_JobPosts_Employers_EmployerId",
                         column: x => x.EmployerId,
                         principalTable: "Employers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "JobApplications",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    JobPostId = table.Column<int>(type: "integer", nullable: false),
-                    EmployeeId = table.Column<int>(type: "integer", nullable: false),
-                    AppliedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    CoverLetter = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_JobApplications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_JobApplications_Employees_EmployeeId",
-                        column: x => x.EmployeeId,
-                        principalTable: "Employees",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_JobApplications_JobPosts_JobPostId",
-                        column: x => x.JobPostId,
-                        principalTable: "JobPosts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -151,6 +125,41 @@ namespace TeqetariApi.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "JobApplications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    JobPostId = table.Column<int>(type: "integer", nullable: false),
+                    EmployeeId = table.Column<int>(type: "integer", nullable: false),
+                    AppliedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    CoverLetter = table.Column<string>(type: "text", nullable: true),
+                    PlacementContractId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JobApplications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_JobApplications_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_JobApplications_JobPosts_JobPostId",
+                        column: x => x.JobPostId,
+                        principalTable: "JobPosts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_JobApplications_PlacementContracts_PlacementContractId",
+                        column: x => x.PlacementContractId,
+                        principalTable: "PlacementContracts",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_JobApplications_EmployeeId",
                 table: "JobApplications",
@@ -160,6 +169,11 @@ namespace TeqetariApi.Migrations
                 name: "IX_JobApplications_JobPostId",
                 table: "JobApplications",
                 column: "JobPostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobApplications_PlacementContractId",
+                table: "JobApplications",
+                column: "PlacementContractId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_JobPosts_EmployerId",

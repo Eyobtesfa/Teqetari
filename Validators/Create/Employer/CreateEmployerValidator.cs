@@ -1,7 +1,7 @@
 using FluentValidation;
-using TeqetariApi.DTO;
+using TeqetariApi.DTO.Create.Employer;
 
-namespace TeqetariApi.Validators.Employer;
+namespace TeqetariApi.Validators.Create.Employer;
 
 public class CreateEmployerValidator : AbstractValidator<CreateEmployerDto>
 {

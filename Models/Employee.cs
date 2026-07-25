@@ -113,4 +113,5 @@ public class Employee
     public bool BackgroundCheckPassed { get; set; } = false;
     public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
     public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
+    public ICollection<PlacementContract> PlacementContracts { get; set; } = new List<PlacementContract>();
 }

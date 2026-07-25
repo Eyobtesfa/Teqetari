@@ -147,6 +147,9 @@ namespace TeqetariApi.Migrations
                     b.Property<int>("JobPostId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("PlacementContractId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -155,6 +158,8 @@ namespace TeqetariApi.Migrations
                     b.HasIndex("EmployeeId");
 
                     b.HasIndex("JobPostId");
+
+                    b.HasIndex("PlacementContractId");
 
                     b.ToTable("JobApplications");
                 });
@@ -265,9 +270,15 @@ namespace TeqetariApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TeqetariApi.Models.PlacementContract", "PlacementContract")
+                        .WithMany()
+                        .HasForeignKey("PlacementContractId");
+
                     b.Navigation("Employee");
 
                     b.Navigation("JobPost");
+
+                    b.Navigation("PlacementContract");
                 });
 
             modelBuilder.Entity("TeqetariApi.Models.JobPost", b =>
@@ -284,13 +295,13 @@ namespace TeqetariApi.Migrations
             modelBuilder.Entity("TeqetariApi.Models.PlacementContract", b =>
                 {
                     b.HasOne("TeqetariApi.Models.Employee", "Employee")
-                        .WithMany()
+                        .WithMany("PlacementContracts")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TeqetariApi.Models.Employer", "Employer")
-                        .WithMany()
+                        .WithMany("PlacementContracts")
                         .HasForeignKey("EmployerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -311,11 +322,15 @@ namespace TeqetariApi.Migrations
             modelBuilder.Entity("TeqetariApi.Models.Employee", b =>
                 {
                     b.Navigation("JobApplications");
+
+                    b.Navigation("PlacementContracts");
                 });
 
             modelBuilder.Entity("TeqetariApi.Models.Employer", b =>
                 {
                     b.Navigation("JobPosts");
+
+                    b.Navigation("PlacementContracts");
                 });
 
             modelBuilder.Entity("TeqetariApi.Models.JobPost", b =>

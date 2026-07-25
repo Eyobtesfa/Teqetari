@@ -1,6 +1,8 @@
-using TeqetariApi.Validators.Employer;
+using TeqetariApi.Validators.Create.Employer;
 using FluentValidation;
-using TeqetariApi.DTO;
+using TeqetariApi.DTO.Create.Employer;
+
+namespace TeqetariApi.Validators.Create.Employer;
 
 public class CompanyEmployerValidator : AbstractValidator<CompanyEmployerDto>
 {
@@ -21,8 +23,8 @@ public class CompanyEmployerValidator : AbstractValidator<CompanyEmployerDto>
 
         RuleFor(x => x.TaxRegistrationNumber)
             .NotEmpty().WithMessage("TIN (Tax Registration Number) is required.")
-            .Matches(@"^\d{10}$").WithMessage("Ethiopian TIN number must be exactly 10 digits.")
-            .When(x => !string.IsNullOrEmpty(x.TaxRegistrationNumber));
+            .Matches(@"^\d{10}$").WithMessage("Ethiopian TIN number must be exactly 10 digits.");
+
 
         RuleFor(x => x.ContactPersonName)
             .NotEmpty().WithMessage("Contact person name is required.")

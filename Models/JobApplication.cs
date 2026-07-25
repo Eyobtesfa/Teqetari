@@ -13,6 +13,8 @@ public class JobApplication
 
 
     public Employee Employee { get; set; } = null!;
+
+    public PlacementContract? PlacementContract { get; set; }
 }
 
 public enum ApplicationStatus

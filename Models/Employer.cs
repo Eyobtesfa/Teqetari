@@ -58,6 +58,7 @@ public class Employer
     }
     public List<string>? SpecialInstruction { get; set; }
     public ICollection<JobPost> JobPosts { get; set; } = new List<JobPost>();
+    public ICollection<PlacementContract> PlacementContracts { get; set; } = new List<PlacementContract>();
 
 }
 
