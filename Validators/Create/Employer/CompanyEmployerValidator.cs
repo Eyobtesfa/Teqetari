@@ -4,7 +4,7 @@ using TeqetariApi.DTO.Create.Employer;
 
 namespace TeqetariApi.Validators.Create.Employer;
 
-public class CompanyEmployerValidator : AbstractValidator<CompanyEmployerDto>
+public class CompanyEmployerValidator : AbstractValidator<CreateCompanyEmployerDto>
 {
     public CompanyEmployerValidator()
     {

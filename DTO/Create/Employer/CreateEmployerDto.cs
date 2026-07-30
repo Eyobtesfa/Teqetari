@@ -14,7 +14,7 @@ public record CreateEmployerDto
     public List<string>? SpecialInstruction { get; init; }
 }
 
-public record HouseholdEmployerDto : CreateEmployerDto
+public record CreateHouseholdEmployerDto : CreateEmployerDto
 {
     public required string FirstName { get; init; }
     public required string LastName { get; init; }
@@ -25,8 +25,9 @@ public record HouseholdEmployerDto : CreateEmployerDto
 
 }
 
-public record CompanyEmployerDto : CreateEmployerDto
+public record CreateCompanyEmployerDto : CreateEmployerDto
 {
+    public required IndustryType Industry { get; init; }
     public required string CompanyName { get; init; }
     public required string TradeLicenseNumber { get; init; }
     public required string TaxRegistrationNumber { get; init; }
@@ -36,7 +37,7 @@ public record CompanyEmployerDto : CreateEmployerDto
 
 }
 
-public record GovernmentEmployerDto : CreateEmployerDto
+public record CreateGovernmentEmployerDto : CreateEmployerDto
 {
     public required string OrganizationName { get; init; }
     public required GovernmentSector Sector { get; init; }

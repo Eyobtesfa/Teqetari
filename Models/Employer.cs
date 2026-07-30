@@ -87,6 +87,7 @@ public class Household : Employer
             "Last name cannot be whitespace.");
     }
 
+    public string FullName => $"{FirstName} {LastName}".Trim();
     public required string NationalIdNumber
     {
         get;

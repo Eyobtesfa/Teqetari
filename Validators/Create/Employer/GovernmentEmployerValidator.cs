@@ -4,7 +4,7 @@ using TeqetariApi.DTO.Create.Employer;
 
 namespace TeqetariApi.Validators.Create.Employer;
 
-public class GovernmentOrganizationValidator : AbstractValidator<GovernmentEmployerDto>
+public class GovernmentOrganizationValidator : AbstractValidator<CreateGovernmentEmployerDto>
 {
     public GovernmentOrganizationValidator()
     {

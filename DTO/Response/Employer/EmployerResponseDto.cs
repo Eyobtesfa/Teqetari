@@ -2,49 +2,46 @@ using TeqetariApi.Enums;
 
 namespace TeqetariApi.DTO.Response.Employer;
 
+public abstract record EmployerBaseResponseDto
+{
+    public required int Id { get; init; }
+    public required EmployerType Type { get; init; }
+    public required string Email { get; init; }
+    public required string PhoneNumber { get; init; }
+    public required string City { get; init; }
+    public required string SubCity { get; init; }
+    public required string Woreda { get; init; }
+    public List<string>? SpecialInstruction { get; init; }
+    public int JobPostsCount { get; init; }
+    public int PlacementContractsCount { get; init; }
+}
 
-public abstract record EmployerBaseResponseDto(
-    int Id,
-    EmployerType Type,
-    string Email,
-    string PhoneNumber,
-    string City,
-    string SubCity,
-    string Woreda,
-    List<string> SpecialInstruction,
-    int JobPostsCount,
-    int PlacementContractsCount
-);
+public record HouseholdResponseDto : EmployerBaseResponseDto
+{
+    public required string FirstName { get; init; }
+    public required string LastName { get; init; }
+    public string FullName => $"{FirstName} {LastName}".Trim();
+    public required string NationalIdNumber { get; init; }
+    public int NumberOfFamilyMembers { get; init; }
+    public bool HasPets { get; init; }
+}
 
+public record PrivateCompanyResponseDto : EmployerBaseResponseDto
+{
+    public IndustryType Industry { get; init; }
+    public required string CompanyName { get; init; }
+    public required string TradeLicenseNumber { get; init; }
+    public string? TaxRegistrationNumber { get; init; }
+    public required string ContactPersonName { get; init; }
+    public required string ContactPersonRole { get; init; }
+    public CompanySize Size { get; init; }
+}
 
-public record HouseholdResponseDto(
-    int Id, EmployerType Type, string Email, string PhoneNumber, string City, string SubCity, string Woreda, List<string> SpecialInstruction, int JobPostsCount, int PlacementContractsCount,
-    string FirstName,
-    string LastName,
-    string FullName,
-    string NationalIdNumber,
-    int NumberOfFamilyMembers,
-    bool HasPets
-) : EmployerBaseResponseDto(Id, Type, Email, PhoneNumber, City, SubCity, Woreda, SpecialInstruction, JobPostsCount, PlacementContractsCount);
-
-
-public record PrivateCompanyResponseDto(
-    int Id, EmployerType Type, string Email, string PhoneNumber, string City, string SubCity, string Woreda, List<string> SpecialInstruction, int JobPostsCount, int PlacementContractsCount,
-    IndustryType Industry,
-    string CompanyName,
-    string TradeLicenseNumber,
-    string TaxRegistrationNumber,
-    string ContactPersonName,
-    string ContactPersonRole,
-    CompanySize Size
-) : EmployerBaseResponseDto(Id, Type, Email, PhoneNumber, City, SubCity, Woreda, SpecialInstruction, JobPostsCount, PlacementContractsCount);
-
-
-public record GovernmentOrganizationResponseDto(
-    int Id, EmployerType Type, string Email, string PhoneNumber, string City, string SubCity, string Woreda, List<string> SpecialInstruction, int JobPostsCount, int PlacementContractsCount,
-    string OrganizationName,
-    GovernmentSector Sector,
-    string Department,
-    string AuthorizedOfficerName,
-    string OfficialLetterRefNumber
-) : EmployerBaseResponseDto(Id, Type, Email, PhoneNumber, City, SubCity, Woreda, SpecialInstruction, JobPostsCount, PlacementContractsCount);
+public record GovernmentOrganizationResponseDto : EmployerBaseResponseDto
+{
+    public required string OrganizationName { get; init; }
+    public GovernmentSector Sector { get; init; }
+    public required string Department { get; init; }
+    public required string AuthorizedOfficerName { get; init; }
+    public required string OfficialLetterRefNumber { get; init; }
+}
