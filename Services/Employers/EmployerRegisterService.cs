@@ -4,9 +4,9 @@ using TeqetariApi.DTO.Create.Employer;
 using TeqetariApi.DTO.Response.Employer;
 using TeqetariApi.Models;
 
-namespace TeqetariApi.Services;
+namespace TeqetariApi.Services.Employers;
 
-public class EmployerRegisterService(TeqetariDbContext context, ILogger<EmployerRegisterService> logger) : IRegisterEmployeeService
+public class EmployerRegisterService(TeqetariDbContext context, ILogger<EmployerRegisterService> logger) : IRegisterEmployerService
 {
     public async Task<EmployerBaseResponseDto> RegisterEmployerAsync(CreateEmployerDto create, CancellationToken ct)
     {

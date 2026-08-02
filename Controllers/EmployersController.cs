@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using TeqetariApi.DTO.Create.Employer;
 
-using TeqetariApi.Services;
+using TeqetariApi.Services.Employers;
 
 namespace TeqetariApi.Controllers;
 
 [ApiController]
 [Route("api/employers")]
-public class EmployersController(IRegisterEmployeeService registerEmployee, ILogger<EmployersController> logger) : ControllerBase
+public class EmployersController(IRegisterEmployerService registerEmployee, ILogger<EmployersController> logger) : ControllerBase
 {
 
     [HttpGet("{id:int}", Name = nameof(GetEmployerById))]
