@@ -107,6 +107,8 @@ public class Employee
                 value,
                 "Expected salary cannot be a negative amount.");
     }
+    
+    public int TotalApplicationCount => JobApplications?.Count ?? 0;
     public JobCategory JobCategory { get; set; }
     public List<string>? Skills { get; set; }
     public bool IsAvailable { get; set; } = true;

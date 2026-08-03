@@ -26,7 +26,7 @@ public class EmployersController(IRegisterEmployerService registerEmployee, ILog
     }
 
     [HttpPost]
-    public async Task<IActionResult> RegisterEmployee(CreateEmployerDto create, CancellationToken ct)
+    public async Task<IActionResult> RegisterEmployer(CreateEmployerDto create, CancellationToken ct)
     {
         logger.LogInformation("Received registration request for email: {Email}", create.Email);
 
