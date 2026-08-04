@@ -2,19 +2,16 @@ using TeqetariApi.Enums;
 
 namespace TeqetariApi.DTO.Response.JobPost;
 
-public record JobPostCreateDto(
-    int Id,
-    int EmployerId,
-    string EmployerName,
-    string Title,
-    string Description,
-    JobCategory Category,
-    List<string> RequiredSkills,
-    decimal OfferedSalary,
-    string Location,
-    DateTime ExpirationDate,
-    bool IsActive,
-    DateTime PostedAt,
-    DateTime CreatedAt,
-    int ApplicationsCount
-);
+public record JobPostResponseDto
+{
+    public required int Id { get; set; }
+    public required int EmployerId { get; set; }
+    public required string Title { get; set; }
+    public required string Description { get; set; }
+    public required JobCategory Category { get; set; }
+    public required List<string> RequiredSkills { get; set; }
+    public required decimal OfferedSalaryMin { get; set; }
+    public required decimal OfferedSalaryMax { get; set; }
+    public bool AccommodationProvided { get; set; } = false;
+    public required int MinimumExperienceYears { get; set; }
+}

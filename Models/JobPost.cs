@@ -5,7 +5,7 @@ public class JobPost
 {
     public int Id { get; set; }
     public int EmployerId { get; set; }
-
+    public Employer Employer { get; set; } = null!;
     public required string Title
     {
         get;
@@ -28,16 +28,38 @@ public class JobPost
     }
     public required JobCategory Category { get; set; }
     public required List<string> RequiredSkills { get; set; }
-    public required decimal OfferedSalary
+    public required decimal OfferedSalaryMin
     {
         get;
         set => field = (value >= 0)
             ? value
             : throw new ValueOutOfRangeException(
-                nameof(OfferedSalary),
+                nameof(OfferedSalaryMin),
                 value,
                 "Offered salary cannot be a negative amount.");
     }
+    public required decimal OfferedSalaryMax
+    {
+        get;
+        set => field = (value >= OfferedSalaryMin)
+            ? value
+            : throw new ValueOutOfRangeException(
+                nameof(OfferedSalaryMax),
+                value,
+                "Offered salary max cannot be less than offered salary min.");
+    }
+    public bool AccommodationProvided { get; set; } = false;
+    public int MinimumExperienceYears
+    {
+        get;
+        set => field = (value >= 0)
+                ? value
+                : throw new ValueOutOfRangeException(
+                    nameof(MinimumExperienceYears),
+                    value,
+                    "Minimum experience years cannot be a negative amount.");
+    }
+
     public required string Location { get; set; }
     public bool IsActive { get; set; } = true;
     public required DateTime PostedAt { get; set; } = DateTime.UtcNow;
@@ -51,7 +73,7 @@ public class JobPost
                 value,
                 "Expiration date must be in the future.");
     }
-    public Employer Employer { get; set; } = null!;
+
     public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
 
 }

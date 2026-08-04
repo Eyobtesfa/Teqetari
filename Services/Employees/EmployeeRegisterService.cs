@@ -56,7 +56,7 @@ public class EmployeeRegisterService(TeqetariDbContext context, ILogger<Employee
             Skills = create.Skills,
             ExpectedSalary = create.ExpectedSalary,
             JobCategory = create.JobCategory,
-           
+
         };
 
         context.Employees.Add(employee);
@@ -65,8 +65,8 @@ public class EmployeeRegisterService(TeqetariDbContext context, ILogger<Employee
         return (await GetEmployeeByIdAsync(employee.Id, ct))!;
     }
 
-    public  Task<bool> EmployeeExistsAsync(string nationalId, CancellationToken ct) =>
-        context.Employees.AsNoTracking().AnyAsync(e=> e.NationalIdNumber == nationalId, ct);
-    
-        
+    public Task<bool> EmployeeExistsAsync(string nationalId, CancellationToken ct) =>
+        context.Employees.AsNoTracking().AnyAsync(e => e.NationalIdNumber == nationalId, ct);
+
+
 }

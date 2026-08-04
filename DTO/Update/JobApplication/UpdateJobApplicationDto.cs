@@ -3,8 +3,13 @@ using TeqetariApi.Models;
 
 namespace TeqetariApi.DTO.Update.JobApplication;
 
-public record UpdateJobApplicationDto
+public record UpdateEmployeeApplicationDto
 {
     public string? CoverLetter { get; set; }
-    public ApplicationStatus? Status { get; set; }
+}
+public record UpdateDirectHireRequestDto
+{
+    public required string JobTitle { get; set; }
+    public required DateTime RequestedDate { get; set; }
+    public required string DutyDescription { get; set; }
 }
