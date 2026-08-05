@@ -3,6 +3,7 @@ using Scalar.AspNetCore;
 using TeqetariApi.Data;
 using TeqetariApi.Services.Employees;
 using TeqetariApi.Services.Employers;
+using TeqetariApi.Services.JobPosts;
 
 
 
@@ -15,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<IRegisterEmployeeService, EmployeeRegisterService>();
 builder.Services.AddScoped<IRegisterEmployerService, EmployerRegisterService>();
+builder.Services.AddScoped<IPostJobService, PostJobService>();
 builder.Services.AddDbContext<TeqetariDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("TeqetariDatabase")));
 builder.Services.AddControllers();
