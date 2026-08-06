@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="TeqetariApi.Api/TeqetariApi.Api.csproj" />
+  <Project Path="TeqetariApi.Application/TeqetariApi.Application.csproj" />
+  <Project Path="TeqetariApi.Domain/TeqetariApi.Domain.csproj" />
+  <Project Path="TeqetariApi.Infrastructure/TeqetariApi.Infrastructure.csproj" />
+</Solution>
