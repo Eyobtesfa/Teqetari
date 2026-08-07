@@ -21,6 +21,22 @@ builder.Services.AddScoped<IPostJobService, PostJobService>();
 builder.Services.AddDbContext<TeqetariDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("TeqetariDatabase")));
 builder.Services.AddControllers();
+
+
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -31,6 +47,8 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+
+app.UseCors("AllowAngularApp");
 
 app.UseHttpsRedirection();
 

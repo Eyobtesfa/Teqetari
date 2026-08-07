@@ -7,5 +7,6 @@ public interface IRegisterEmployeeService
 {
     Task<CreateEmployeeResponseDto> RegisterEmployeeAsync(CreateEmployeeDto create, CancellationToken ct);
     Task<CreateEmployeeResponseDto?> GetEmployeeByIdAsync(int id, CancellationToken ct);
+    Task<IEnumerable<CreateEmployeeResponseDto>> GetAllEmployeesAsync(CancellationToken ct);
     Task<bool> EmployeeExistsAsync(string nationalId, CancellationToken ct);
 }

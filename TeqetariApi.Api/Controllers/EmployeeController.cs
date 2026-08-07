@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using TeqetariApi.Application.DTOs.Create.Employee;
 using TeqetariApi.Infrastructure.Services.Employees;
 using TeqetariApi.Application.Interfaces;
+using TeqetariApi.Application.DTOs.Response.Employee;
 
 
 
@@ -26,6 +27,12 @@ public class EmployeeController(IRegisterEmployeeService registerEmployee) : Con
 
         return Ok(employee);
     }
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<CreateEmployeeResponseDto>>> GetAllEmployees(CancellationToken ct)
+    {
+        var employees = await registerEmployee.GetAllEmployeesAsync(ct);
+        return Ok(employees);
+    }
     [HttpPost]
     public async Task<IActionResult> RegisterEmployeeAsync(CreateEmployeeDto create, CancellationToken ct)
 
@@ -49,8 +56,4 @@ public class EmployeeController(IRegisterEmployeeService registerEmployee) : Con
             new { id = result.Id },
             result);
     }
-
-
-
-
 }

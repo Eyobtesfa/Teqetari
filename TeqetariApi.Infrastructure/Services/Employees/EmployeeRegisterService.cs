@@ -10,6 +10,34 @@ namespace TeqetariApi.Infrastructure.Services.Employees;
 
 public class EmployeeRegisterService(TeqetariDbContext context, ILogger<EmployeeRegisterService> logger) : IRegisterEmployeeService
 {
+
+    public async Task<IEnumerable<CreateEmployeeResponseDto>> GetAllEmployeesAsync(CancellationToken ct)
+    {
+        var employees = await context.Employees
+                .AsNoTracking()
+                .Select(e => new CreateEmployeeResponseDto
+                {
+                    Id = e.Id,
+                    PhoneNumber = e.PhoneNumber,
+                    FirstName = e.FirstName,
+                    LastName = e.LastName,
+                    NationalIdNumber = e.NationalIdNumber,
+                    City = e.City,
+                    SubCity = e.SubCity,
+                    Woreda = e.Woreda,
+                    YearsOfExperience = e.YearsOfExperience,
+                    ExpectedSalary = e.ExpectedSalary,
+                    JobCategory = e.JobCategory,
+                    Skills = e.Skills,
+                    IsAvailable = e.IsAvailable,
+                    BackgroundCheckPassed = e.BackgroundCheckPassed,
+                    RegisteredAt = e.RegisteredAt,
+                    TotalApplicationCount = e.TotalApplicationCount
+                })
+                .ToListAsync(ct);
+
+                return employees;
+    }
     public async Task<CreateEmployeeResponseDto?> GetEmployeeByIdAsync(int id, CancellationToken ct)
     {
         logger.LogInformation("Fetching employee with ID: {EmployeeId}", id);
