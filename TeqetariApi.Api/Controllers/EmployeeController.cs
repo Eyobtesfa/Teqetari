@@ -34,11 +34,11 @@ public class EmployeeController(IRegisterEmployeeService registerEmployee) : Con
         return Ok(employees);
     }
     [HttpPost]
-    public async Task<IActionResult> RegisterEmployeeAsync(CreateEmployeeDto create, CancellationToken ct)
+    public async Task<IActionResult> RegisterEmployeeAsync([FromBody] CreateEmployeeDto dto, CancellationToken ct)
 
 
     {
-        if (await registerEmployee.EmployeeExistsAsync(create.NationalIdNumber, ct))
+        if (await registerEmployee.EmployeeExistsAsync(dto.NationalIdNumber, ct))
 
 
         {
@@ -46,11 +46,11 @@ public class EmployeeController(IRegisterEmployeeService registerEmployee) : Con
 
             {
                 Title = "Employee with the provided National ID Number already exists.",
-                Detail = $"An employee with National ID Number {create.NationalIdNumber} already exists.",
+                Detail = $"An employee with National ID Number {dto.NationalIdNumber} already exists.",
                 Status = StatusCodes.Status409Conflict
             });
         }
-        var result = await registerEmployee.RegisterEmployeeAsync(create, ct);
+        var result = await registerEmployee.RegisterEmployeeAsync(dto, ct);
         return CreatedAtAction(
             nameof(GetEmployeeById),
             new { id = result.Id },

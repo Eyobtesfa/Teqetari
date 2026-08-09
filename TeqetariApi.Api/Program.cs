@@ -20,7 +20,13 @@ builder.Services.AddScoped<IRegisterEmployerService, EmployerRegisterService>();
 builder.Services.AddScoped<IPostJobService, PostJobService>();
 builder.Services.AddDbContext<TeqetariDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("TeqetariDatabase")));
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter()
+        );
+    });
 
 
 
