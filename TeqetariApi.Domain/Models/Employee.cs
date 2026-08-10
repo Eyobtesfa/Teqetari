@@ -1,11 +1,25 @@
 using TeqetariApi.Domain.Enums;
 using TeqetariApi.Domain.Exceptions;
+using System.Net.Mail;
 
 
 namespace TeqetariApi.Domain.Models;
 
 public class Employee
 {
+
+    private bool IsValidEmail(string email)
+{
+    try
+    {
+        var addr = new MailAddress(email);
+        return addr.Address == email;
+    }
+    catch
+    {
+        return false;
+    }
+}
     public int Id { get; set; }
     public required string PhoneNumber
     {
@@ -48,15 +62,28 @@ public class Employee
                 value ?? string.Empty,
                 "Invalid National ID Number");
     }
+    
+    private string? _email;
     public string? Email
     {
-        get;
-        set => field = (!string.IsNullOrWhiteSpace(value) && value.Contains("@"))
-            ? value
-            : throw new InvalidModelFieldException(
-                nameof(Email),
-                value ?? string.Empty,
-                "A valid email address is required.");
+        get => _email;
+    set
+    {
+        // Allow null or whitespace to mean "no email provided"
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            _email = null;
+            return;
+        }
+
+        // Validate format ONLY if an actual email string was passed
+        if (!IsValidEmail(value))
+        {
+            throw new InvalidModelFieldException("Email", value, "A valid email address is required.");
+        }
+
+        _email = value;
+    }
     }
     public required string City
     {
