@@ -7,4 +7,5 @@ public interface IRegisterEmployerService
 {
     Task<EmployerBaseResponseDto> RegisterEmployerAsync(CreateEmployerDto create, CancellationToken ct);
     Task<EmployerBaseResponseDto?> GetEmployerByIdAsync(int id, CancellationToken ct);
+    Task<List<EmployerBaseResponseDto>> GetAllEmployersAsync(CancellationToken ct);
 }

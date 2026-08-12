@@ -1,7 +1,12 @@
+using System.Text.Json.Serialization;
 using TeqetariApi.Domain.Enums;
 
 namespace TeqetariApi.Application.DTOs.Response.Employer;
 
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(HouseholdResponseDto), typeDiscriminator: "Household")]
+[JsonDerivedType(typeof(PrivateCompanyResponseDto), typeDiscriminator: "PrivateCompany")]
+[JsonDerivedType(typeof(GovernmentOrganizationResponseDto), typeDiscriminator: "GovernmentOrganization")]
 public abstract record EmployerBaseResponseDto
 {
     public required int Id { get; init; }

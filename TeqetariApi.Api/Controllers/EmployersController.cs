@@ -3,12 +3,13 @@ using TeqetariApi.Application.DTOs.Create.Employer;
 
 using TeqetariApi.Infrastructure.Services.Employers;
 using TeqetariApi.Application.Interfaces;
+using TeqetariApi.Application.DTOs.Response.Employer;
 
 namespace TeqetariApi.Api.Controllers;
 
 [ApiController]
 [Route("api/employers")]
-public class EmployersController(IRegisterEmployerService registerEmployee, ILogger<EmployersController> logger) : ControllerBase
+public class EmployersController(IRegisterEmployerService registerEmployer, ILogger<EmployersController> logger) : ControllerBase
 {
 
     [HttpGet("{id:int}", Name = nameof(GetEmployerById))]
@@ -16,7 +17,7 @@ public class EmployersController(IRegisterEmployerService registerEmployee, ILog
         int id,
         CancellationToken ct)
     {
-        var employer = await registerEmployee.GetEmployerByIdAsync(id, ct);
+        var employer = await registerEmployer.GetEmployerByIdAsync(id, ct);
 
         if (employer is null)
         {
@@ -27,15 +28,15 @@ public class EmployersController(IRegisterEmployerService registerEmployee, ILog
     }
 
     [HttpPost]
-    public async Task<IActionResult> RegisterEmployer(CreateEmployerDto create, CancellationToken ct)
+    public async Task<IActionResult> RegisterEmployer([FromBody]CreateEmployerDto dto, CancellationToken ct)
     {
-        logger.LogInformation("Received registration request for email: {Email}", create.Email);
+        logger.LogInformation("Received registration request for email: {Email}", dto.Email);
 
         try
         {
-            var result = await registerEmployee.RegisterEmployerAsync(create, ct);
+            var result = await registerEmployer.RegisterEmployerAsync(dto, ct);
 
-            // Returns HTTP 201 Created with a Location header pointing to GetById
+          
             return CreatedAtAction(
                 nameof(GetEmployerById),
                 new { id = result.Id },
@@ -51,5 +52,11 @@ public class EmployersController(IRegisterEmployerService registerEmployee, ILog
             logger.LogWarning("Registration failed due to invalid arguments: {Message}", ex.Message);
             return BadRequest(new { message = ex.Message });
         }
+    }
+    [HttpGet]
+    public async Task<ActionResult<List<EmployerBaseResponseDto>>> GetAllEmployers(CancellationToken ct)
+    {
+        var employers = await registerEmployer.GetAllEmployersAsync(ct);
+        return Ok(employers);
     }
 }

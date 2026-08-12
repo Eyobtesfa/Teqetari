@@ -95,8 +95,7 @@ public class EmployerRegisterService(TeqetariDbContext context, ILogger<Employer
     {
         logger.LogInformation("Fetching employer by ID: {EmployerId}", id);
 
-        // Fetch entity with AsNoTracking for high read performance.
-        // EF Core TPH automatically instantiates the correct derived type (Household, PrivateCompany, etc.).
+        
         var employer = await context.Employers
             .Include(e => e.JobPosts)
             .Include(e => e.PlacementContracts)
@@ -110,6 +109,17 @@ public class EmployerRegisterService(TeqetariDbContext context, ILogger<Employer
         }
 
         return MapToResponseDto(employer);
+    }
+
+    public async Task<List<EmployerBaseResponseDto>> GetAllEmployersAsync(CancellationToken ct)
+    {
+        var employers = await context.Employers
+            .AsNoTracking()
+            .Include(e => e.JobPosts)
+            .Include(e => e.PlacementContracts)
+            .ToListAsync();
+
+            return employers.Select(MapToResponseDto).ToList();
     }
 
 
@@ -180,4 +190,5 @@ public class EmployerRegisterService(TeqetariDbContext context, ILogger<Employer
         },
         _ => throw new InvalidOperationException("Unknown entity type.")
     };
+   
 }
