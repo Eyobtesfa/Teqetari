@@ -3,14 +3,17 @@ using Microsoft.Extensions.Logging;
 using TeqetariApi.Infrastructure.Persistence;
 using TeqetariApi.Application.DTOs.Create.Employee;
 using TeqetariApi.Application.DTOs.Response.Employee;
+using TeqetariApi.Application.DTOs.Create.ProfilePicture;
 using TeqetariApi.Domain.Models;
 using TeqetariApi.Application.Interfaces;
 
 namespace TeqetariApi.Infrastructure.Services.Employees;
 
-public class EmployeeRegisterService(TeqetariDbContext context, ILogger<EmployeeRegisterService> logger) : IRegisterEmployeeService
+public class EmployeeRegisterService(
+    TeqetariDbContext context,
+    ILogger<EmployeeRegisterService> logger,
+    IProfilePictureUploader profilePictureUploader) : IRegisterEmployeeService
 {
-
     public async Task<IEnumerable<CreateEmployeeResponseDto>> GetAllEmployeesAsync(CancellationToken ct)
     {
         var employees = await context.Employees
@@ -28,20 +31,22 @@ public class EmployeeRegisterService(TeqetariDbContext context, ILogger<Employee
                     YearsOfExperience = e.YearsOfExperience,
                     ExpectedSalary = e.ExpectedSalary,
                     JobCategory = e.JobCategory,
-                    Skills = e.Skills,
+                    Skills = e.Skills ?? new List<string>(),
                     IsAvailable = e.IsAvailable,
                     BackgroundCheckPassed = e.BackgroundCheckPassed,
                     RegisteredAt = e.RegisteredAt,
-                    TotalApplicationCount = e.TotalApplicationCount
+                    TotalApplicationCount = e.TotalApplicationCount,
+                    ProfilePictureUrl = e.ProfilePictureUrl
                 })
                 .ToListAsync(ct);
 
-                return employees;
+        return employees;
     }
+
     public async Task<CreateEmployeeResponseDto?> GetEmployeeByIdAsync(int id, CancellationToken ct)
     {
         logger.LogInformation("Fetching employee with ID: {EmployeeId}", id);
-        var employee = await context.Employees.FindAsync(new object[] { id }, ct);
+        var employee = await context.Employees.FindAsync([id], ct);
         if (employee == null)
         {
             logger.LogWarning("Employee with ID: {EmployeeId} not found", id);
@@ -65,12 +70,21 @@ public class EmployeeRegisterService(TeqetariDbContext context, ILogger<Employee
             IsAvailable = employee.IsAvailable,
             BackgroundCheckPassed = employee.BackgroundCheckPassed,
             RegisteredAt = employee.RegisteredAt,
-            TotalApplicationCount = employee.TotalApplicationCount
+            TotalApplicationCount = employee.TotalApplicationCount,
+            ProfilePictureUrl = employee.ProfilePictureUrl
         };
     }
+
     public async Task<CreateEmployeeResponseDto> RegisterEmployeeAsync(CreateEmployeeDto create, CancellationToken ct)
     {
         logger.LogInformation("Attempting to register employee with Email: {Email}", create.Email);
+
+        // Prevent duplicate registration by National ID
+        if (await EmployeeExistsAsync(create.NationalIdNumber, ct))
+        {
+            logger.LogWarning("Registration blocked - National ID already exists: {NationalId}", create.NationalIdNumber);
+            throw new InvalidOperationException("An employee with this National ID is already registered.");
+        }
 
         var employee = new Employee
         {
@@ -86,17 +100,37 @@ public class EmployeeRegisterService(TeqetariDbContext context, ILogger<Employee
             Skills = create.Skills,
             ExpectedSalary = create.ExpectedSalary,
             JobCategory = create.JobCategory,
-
+            ProfilePictureUrl = string.Empty
         };
 
         context.Employees.Add(employee);
-        await context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct); // save first — employee needs an Id before naming the blob
+
+        if (create.ProfilePicture != null)
+        {
+            try
+            {
+                var picResult = await profilePictureUploader.UploadAsync(
+                    new UploadProfilePictureDto
+                    {
+                        File = create.ProfilePicture,
+                        OwnerId = employee.Id.ToString()
+                    }, ct);
+
+                employee.ProfilePictureUrl = picResult.Url;
+                await context.SaveChangesAsync(ct);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Non-fatal — registration still succeeds without a picture
+                logger.LogWarning(ex, "Profile picture upload failed for employee {EmployeeId}", employee.Id);
+            }
+        }
+
         logger.LogInformation("Successfully registered employee with ID: {EmployeeId}", employee.Id);
         return (await GetEmployeeByIdAsync(employee.Id, ct))!;
     }
 
     public Task<bool> EmployeeExistsAsync(string nationalId, CancellationToken ct) =>
         context.Employees.AsNoTracking().AnyAsync(e => e.NationalIdNumber == nationalId, ct);
-
-
 }
