@@ -1,5 +1,5 @@
 // Infrastructure/Services/Storage/ProfilePictureUploader.cs
-using Azure.Storage.Blobs;
+/*using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using TeqetariApi.Application.DTOs.Create.ProfilePicture;
 using TeqetariApi.Application.DTOs.Response.ProfilePicture;
@@ -58,4 +58,4 @@ public class ProfilePictureUploader : IProfilePictureUploader
         bool isPng = buffer[0] == 0x89 && buffer[1] == 0x50;
         return isJpg || isPng;
     }
-}
+}*/

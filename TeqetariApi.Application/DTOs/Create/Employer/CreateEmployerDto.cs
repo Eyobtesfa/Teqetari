@@ -18,6 +18,7 @@ public record CreateEmployerDto
     public required string SubCity { get; init; }
     public required string Woreda { get; init; }
     public List<string>? SpecialInstruction { get; init; }
+    public string Password { get; init; } = string.Empty;
 }
 
 public record CreateHouseholdEmployerDto : CreateEmployerDto

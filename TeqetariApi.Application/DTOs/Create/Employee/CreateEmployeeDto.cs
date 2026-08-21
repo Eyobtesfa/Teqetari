@@ -26,6 +26,7 @@ public record CreateEmployeeDto
     public required int YearsOfExperience { get; init; }
 
     public required decimal ExpectedSalary { get; init; }
+    public string Password { get; init; } = string.Empty;
 
     public List<string>? Skills { get; init; }
 

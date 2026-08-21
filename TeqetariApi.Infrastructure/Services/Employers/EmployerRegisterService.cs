@@ -82,6 +82,7 @@ public class EmployerRegisterService(TeqetariDbContext context, ILogger<Employer
             _ => throw new ArgumentException("Unsupported employer payload type.", nameof(create))
         };
 
+        employer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(create.Password, workFactor: 12);
         context.Employers.Add(employer);
         await context.SaveChangesAsync(ct);
         logger.LogInformation("Registered Employer profile for {EmployerId} as {EmployerType}.", employer.Id, employer.Type);
@@ -95,7 +96,7 @@ public class EmployerRegisterService(TeqetariDbContext context, ILogger<Employer
     {
         logger.LogInformation("Fetching employer by ID: {EmployerId}", id);
 
-        
+
         var employer = await context.Employers
             .Include(e => e.JobPosts)
             .Include(e => e.PlacementContracts)
@@ -119,7 +120,7 @@ public class EmployerRegisterService(TeqetariDbContext context, ILogger<Employer
             .Include(e => e.PlacementContracts)
             .ToListAsync();
 
-            return employers.Select(MapToResponseDto).ToList();
+        return employers.Select(MapToResponseDto).ToList();
     }
 
 
@@ -190,5 +191,11 @@ public class EmployerRegisterService(TeqetariDbContext context, ILogger<Employer
         },
         _ => throw new InvalidOperationException("Unknown entity type.")
     };
-   
+
+    public async Task<Employer?> GetEmployerByPhoneAsync(string phoneNumber, CancellationToken ct)
+    {
+        return await context.Employers
+            .FirstOrDefaultAsync(e => e.PhoneNumber == phoneNumber, ct);
+    }
+
 }

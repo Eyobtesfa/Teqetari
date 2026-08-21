@@ -3,10 +3,11 @@ using TeqetariApi.Domain.Exceptions;
 
 namespace TeqetariApi.Domain.Models;
 
-public class Employer
+public abstract class Employer
 {
     public int Id { get; set; }
     public required EmployerType Type { get; set; }
+    public abstract string DisplayName { get; }
     public required string Email
     {
         get;
@@ -57,6 +58,7 @@ public class Employer
                 value ?? string.Empty,
                 "Woreda cannot be empty.");
     }
+    public string PasswordHash { get; set; } = string.Empty;
     public List<string>? SpecialInstruction { get; set; }
     public ICollection<JobPost> JobPosts { get; set; } = new List<JobPost>();
     public ICollection<PlacementContract> PlacementContracts { get; set; } = new List<PlacementContract>();
@@ -89,6 +91,7 @@ public class Household : Employer
     }
 
     public string FullName => $"{FirstName} {LastName}".Trim();
+    public override string DisplayName => $"{FirstName} {LastName}";
     public required string NationalIdNumber
     {
         get;
@@ -127,6 +130,7 @@ public class PrivateCompany : Employer
                 value ?? string.Empty,
                 "Company name cannot be empty.");
     }
+    public override string DisplayName => CompanyName;
     public required string TradeLicenseNumber
     {
         get;
@@ -183,6 +187,7 @@ public class GovernmentOrganization : Employer
                 value ?? string.Empty,
                 "Organization name cannot be empty.");
     }
+    public override string DisplayName => OrganizationName;
     public required GovernmentSector Sector { get; set; }
     public required string Department { get; set; }
     public required string AuthorizedOfficerName

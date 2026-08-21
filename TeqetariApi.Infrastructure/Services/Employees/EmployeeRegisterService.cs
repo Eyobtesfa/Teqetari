@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using TeqetariApi.Infrastructure.Persistence;
 using TeqetariApi.Application.DTOs.Create.Employee;
 using TeqetariApi.Application.DTOs.Response.Employee;
-using TeqetariApi.Application.DTOs.Create.ProfilePicture;
+//using TeqetariApi.Application.DTOs.Create.ProfilePicture;
 using TeqetariApi.Domain.Models;
 using TeqetariApi.Application.Interfaces;
 
@@ -11,8 +11,8 @@ namespace TeqetariApi.Infrastructure.Services.Employees;
 
 public class EmployeeRegisterService(
     TeqetariDbContext context,
-    ILogger<EmployeeRegisterService> logger,
-    IProfilePictureUploader profilePictureUploader) : IRegisterEmployeeService
+    ILogger<EmployeeRegisterService> logger
+    ) : IRegisterEmployeeService
 {
     public async Task<IEnumerable<CreateEmployeeResponseDto>> GetAllEmployeesAsync(CancellationToken ct)
     {
@@ -36,7 +36,7 @@ public class EmployeeRegisterService(
                     BackgroundCheckPassed = e.BackgroundCheckPassed,
                     RegisteredAt = e.RegisteredAt,
                     TotalApplicationCount = e.TotalApplicationCount,
-                    ProfilePictureUrl = e.ProfilePictureUrl
+
                 })
                 .ToListAsync(ct);
 
@@ -71,7 +71,7 @@ public class EmployeeRegisterService(
             BackgroundCheckPassed = employee.BackgroundCheckPassed,
             RegisteredAt = employee.RegisteredAt,
             TotalApplicationCount = employee.TotalApplicationCount,
-            ProfilePictureUrl = employee.ProfilePictureUrl
+
         };
     }
 
@@ -100,32 +100,13 @@ public class EmployeeRegisterService(
             Skills = create.Skills,
             ExpectedSalary = create.ExpectedSalary,
             JobCategory = create.JobCategory,
-            ProfilePictureUrl = string.Empty
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(create.Password, workFactor: 12)
         };
 
         context.Employees.Add(employee);
         await context.SaveChangesAsync(ct); // save first — employee needs an Id before naming the blob
 
-        if (create.ProfilePicture != null)
-        {
-            try
-            {
-                var picResult = await profilePictureUploader.UploadAsync(
-                    new UploadProfilePictureDto
-                    {
-                        File = create.ProfilePicture,
-                        OwnerId = employee.Id.ToString()
-                    }, ct);
 
-                employee.ProfilePictureUrl = picResult.Url;
-                await context.SaveChangesAsync(ct);
-            }
-            catch (InvalidOperationException ex)
-            {
-                // Non-fatal — registration still succeeds without a picture
-                logger.LogWarning(ex, "Profile picture upload failed for employee {EmployeeId}", employee.Id);
-            }
-        }
 
         logger.LogInformation("Successfully registered employee with ID: {EmployeeId}", employee.Id);
         return (await GetEmployeeByIdAsync(employee.Id, ct))!;
@@ -133,4 +114,10 @@ public class EmployeeRegisterService(
 
     public Task<bool> EmployeeExistsAsync(string nationalId, CancellationToken ct) =>
         context.Employees.AsNoTracking().AnyAsync(e => e.NationalIdNumber == nationalId, ct);
+
+    public async Task<Employee?> GetEmployeeByPhoneAsync(string phoneNumber, CancellationToken ct)
+    {
+        return await context.Employees
+            .FirstOrDefaultAsync(e => e.PhoneNumber == phoneNumber, ct);
+    }
 }

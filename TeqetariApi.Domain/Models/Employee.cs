@@ -9,17 +9,17 @@ public class Employee
 {
 
     private bool IsValidEmail(string email)
-{
-    try
     {
-        var addr = new MailAddress(email);
-        return addr.Address == email;
+        try
+        {
+            var addr = new MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
     }
-    catch
-    {
-        return false;
-    }
-}
     public int Id { get; set; }
     public required string PhoneNumber
     {
@@ -62,28 +62,28 @@ public class Employee
                 value ?? string.Empty,
                 "Invalid National ID Number");
     }
-    
+
     private string? _email;
     public string? Email
     {
         get => _email;
-    set
-    {
-        // Allow null or whitespace to mean "no email provided"
-        if (string.IsNullOrWhiteSpace(value))
+        set
         {
-            _email = null;
-            return;
-        }
+            // Allow null or whitespace to mean "no email provided"
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                _email = null;
+                return;
+            }
 
-        // Validate format ONLY if an actual email string was passed
-        if (!IsValidEmail(value))
-        {
-            throw new InvalidModelFieldException("Email", value, "A valid email address is required.");
-        }
+            // Validate format ONLY if an actual email string was passed
+            if (!IsValidEmail(value))
+            {
+                throw new InvalidModelFieldException("Email", value, "A valid email address is required.");
+            }
 
-        _email = value;
-    }
+            _email = value;
+        }
     }
     public required string City
     {
@@ -135,6 +135,8 @@ public class Employee
                 value,
                 "Expected salary cannot be a negative amount.");
     }
+
+    public string PasswordHash { get; set; } = string.Empty;
 
     public int TotalApplicationCount => JobApplications?.Count ?? 0;
     public JobCategory JobCategory { get; set; }
