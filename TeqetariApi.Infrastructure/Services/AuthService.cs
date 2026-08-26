@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TeqetariApi.Application.DTOs.Create.Employee;
@@ -18,6 +19,7 @@ public class AuthService(
 {
     public async Task<(bool Success, IEnumerable<string> Errors)> RegisterEmployeeAsync(CreateEmployeeDto dto)
     {
+        await using var transaction = await context.Database.BeginTransactionAsync();
         // 1. Create Identity User (Employees log in using Phone Number)
         var user = new AppUser
         {
@@ -33,7 +35,13 @@ public class AuthService(
             return (false, result.Errors.Select(e => e.Description));
         }
 
-        await userManager.AddToRoleAsync(user, "Employee");
+        await EnsureRoleExistsAsync("Employee");
+        var roleResult = await userManager.AddToRoleAsync(user, "Employee");
+        if (!roleResult.Succeeded)
+        {
+            await transaction.RollbackAsync();
+            return (false, roleResult.Errors.Select(e => e.Description));
+        }
 
         // 2. Create Employee Domain Entity
         var employee = new Employee
@@ -53,13 +61,26 @@ public class AuthService(
         };
 
         context.Employees.Add(employee);
-        await context.SaveChangesAsync();
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+        await transaction.CommitAsync();
 
         return (true, Enumerable.Empty<string>());
     }
 
     public async Task<(bool Success, IEnumerable<string> Errors)> RegisterEmployerAsync(CreateEmployerDto dto)
     {
+
+        await using var tranaction = await context.Database.BeginTransactionAsync();
+
         // 1. Create Identity User (Employers log in using Email)
         var user = new AppUser
         {
@@ -75,10 +96,17 @@ public class AuthService(
             return (false, result.Errors.Select(e => e.Description));
         }
 
-        await userManager.AddToRoleAsync(user, "Employer");
+        await EnsureRoleExistsAsync("Employer");
+        var roleResult = await userManager.AddToRoleAsync(user, "Employer");
+        if (!roleResult.Succeeded)
+        {
+            await tranaction.RollbackAsync();
+            return (false, roleResult.Errors.Select(e => e.Description));
+        }
+
 
         // 2. Instantiate TPH Employer Subtype via Pattern Matching
-        Employer employer = dto switch
+        Employer? employer = dto switch
         {
             CreateHouseholdEmployerDto h => new Household
             {
@@ -131,12 +159,28 @@ public class AuthService(
                 AuthorizedOfficerName = g.AuthorizedOfficerName,
                 OfficialLetterRefNumber = g.OfficialLetterRefNumber
             },
-            _ => throw new ArgumentOutOfRangeException(nameof(dto), "Unsupported employer type.")
+            _ => null
         };
+        
+        if (employer is null)
+        {
+            await tranaction.RollbackAsync();
+            return (false, new[] { "Unsupported employer type" });
+        }
 
         context.Employers.Add(employer);
-        await context.SaveChangesAsync();
 
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch
+        {
+            await tranaction.RollbackAsync();
+            throw;
+        }
+
+        await tranaction.CommitAsync();
         return (true, Enumerable.Empty<string>());
     }
 
@@ -167,27 +211,15 @@ public class AuthService(
         await userManager.UpdateAsync(user);
 
         // 4. Issue Tokens[cite: 2]
-        var roles = await userManager.GetRolesAsync(user);
-        var accessToken = tokenService.GenerateJwt(user, roles);
+        var (accessToken, refreshTokenValue) = await IssueTokensAsync(user);
 
-        var refreshToken = new RefreshToken
-        {
-            Token = Guid.NewGuid().ToString("N"),
-            UserId = user.Id,
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            IsUsed = false,
-            IsRevoked = false
-        };
-
-        context.RefreshTokens.Add(refreshToken);
-        await context.SaveChangesAsync();
-
-        return (true, new AuthResponseDto(accessToken, refreshToken.Token), null, null);
+        return (true, new AuthResponseDto(accessToken, refreshTokenValue), null, null);
     }
 
     public async Task<(bool Success, AuthResponseDto? Response, string? ErrorMessage)> RefreshTokenAsync(RefreshTokenDto dto)
     {
-        var storedToken = await context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == dto.RefreshToken);
+        var incomingHash = HashToken(dto.RefreshToken);
+        var storedToken = await context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == incomingHash);
         if (storedToken == null)
             return (false, null, "Invalid refresh token.");
 
@@ -207,25 +239,51 @@ public class AuthService(
             return (false, null, "Refresh token expired or revoked.");
 
         storedToken.IsUsed = true;
+        var user = await userManager.FindByIdAsync(storedToken.UserId);
 
-        var newRefreshToken = new RefreshToken
+        if (user is null)
         {
-            Token = Guid.NewGuid().ToString("N"),
-            UserId = storedToken.UserId,
+            await context.SaveChangesAsync(); // persist storedToken.IsUsed = true regardless
+            return (false, null, "Account no longer exists.");
+        }
+
+        var (newAccessToken, newRefreshTokenValue) = await IssueTokensAsync(user);
+
+        return (true, new AuthResponseDto(newAccessToken, newRefreshTokenValue), null);
+    }
+
+
+    private async Task<(string AccessToken, string RefreshTokenValue)> IssueTokensAsync(AppUser user)
+    {
+        var roles = await userManager.GetRolesAsync(user);
+        var accessToken = tokenService.GenerateJwt(user, roles);
+ 
+        var refreshTokenValue = GenerateSecureToken();
+ 
+        var refreshToken = new RefreshToken
+        {
+            Token = HashToken(refreshTokenValue), // store hash, not the raw token
+            UserId = user.Id,
             ExpiresAt = DateTime.UtcNow.AddDays(7),
             IsUsed = false,
             IsRevoked = false
         };
-
-        context.RefreshTokens.Add(newRefreshToken);
+ 
+        context.RefreshTokens.Add(refreshToken);
         await context.SaveChangesAsync();
-
-        var user = await userManager.FindByIdAsync(storedToken.UserId);
-        var roles = await userManager.GetRolesAsync(user!);
-        var newAccessToken = tokenService.GenerateJwt(user!, roles);
-
-        return (true, new AuthResponseDto(newAccessToken, newRefreshToken.Token), null);
+ 
+        // Return the raw (unhashed) value to the caller — this is the only time it exists
+        // outside the client's hands; the DB only ever sees the hash.
+        return (accessToken, refreshTokenValue);
     }
+
+
+    private static string GenerateSecureToken() =>
+        Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+ 
+    // CHANGED: new helper — SHA-256 hash used so raw refresh tokens are never persisted.
+    private static string HashToken(string token) =>
+        Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));
 
     private async Task EnsureRoleExistsAsync(string roleName)
     {
