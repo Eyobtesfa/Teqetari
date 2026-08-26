@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TeqetariApi.Application.DTOs.Create.Employee;
 using TeqetariApi.Application.DTOs.Create.Employer;
 using TeqetariApi.Application.Interfaces;
@@ -15,6 +16,7 @@ public class AuthService(
     UserManager<AppUser> userManager,
     RoleManager<IdentityRole> roleManager,
     TeqetariDbContext context,
+    ILogger<AuthService> logger,
     TokenService tokenService) : IAuthService
 {
     public async Task<(bool Success, IEnumerable<string> Errors)> RegisterEmployeeAsync(CreateEmployeeDto dto)
@@ -73,6 +75,9 @@ public class AuthService(
         }
         await transaction.CommitAsync();
 
+        logger.LogInformation(
+        "Employee {FirstName} {LastName} (UserId: {UserId}) registered successfully.",
+    dto.FirstName, dto.LastName, user.Id);
         return (true, Enumerable.Empty<string>());
     }
 
@@ -181,6 +186,17 @@ public class AuthService(
         }
 
         await tranaction.CommitAsync();
+        var employerName = employer switch
+{
+    Household h => $"{h.FirstName} {h.LastName}",
+    PrivateCompany c => c.CompanyName,
+    GovernmentOrganization g => g.OrganizationName,
+    _ => "Unknown"
+};
+
+        logger.LogInformation(
+    "Employer {EmployerName} ({EmployerType}, UserId: {UserId}) registered successfully.",
+    employerName, employer.GetType().Name, user.Id);
         return (true, Enumerable.Empty<string>());
     }
 
