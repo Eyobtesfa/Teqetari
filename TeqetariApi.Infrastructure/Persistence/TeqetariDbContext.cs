@@ -1,10 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using TeqetariApi.Domain.Models;
+using TeqetariApi.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using TeqetariApi.Domain.Enums;
 
 namespace TeqetariApi.Infrastructure.Persistence;
 
-public class TeqetariDbContext(DbContextOptions<TeqetariDbContext> options) : DbContext(options)
+public class TeqetariDbContext : IdentityDbContext<AppUser>
 {
+    public TeqetariDbContext(DbContextOptions<TeqetariDbContext> options) : base(options) { }
+
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<Employer> Employers => Set<Employer>();
     public DbSet<Household> Households => Set<Household>();
@@ -13,4 +18,28 @@ public class TeqetariDbContext(DbContextOptions<TeqetariDbContext> options) : Db
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
     public DbSet<JobPost> JobPosts => Set<JobPost>();
     public DbSet<PlacementContract> PlacementContracts => Set<PlacementContract>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<Employer>()
+            .HasDiscriminator<EmployerType>("Type")
+            .HasValue<Household>(EmployerType.Household)
+            .HasValue<PrivateCompany>(EmployerType.PrivateCompany)
+            .HasValue<GovernmentOrganization>(EmployerType.GovernmentOrganization);
+
+        builder.Entity<Employee>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(e => e.AppUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<Employer>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(e => e.AppUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
 }

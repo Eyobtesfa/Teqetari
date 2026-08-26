@@ -100,7 +100,7 @@ public class EmployeeRegisterService(
             Skills = create.Skills,
             ExpectedSalary = create.ExpectedSalary,
             JobCategory = create.JobCategory,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(create.Password, workFactor: 12)
+            //PasswordHash = BCrypt.Net.BCrypt.HashPassword(create.Password, workFactor: 12)
         };
 
         context.Employees.Add(employee);

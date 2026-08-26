@@ -21,6 +21,8 @@ public class Employee
         }
     }
     public int Id { get; set; }
+
+    public string AppUserId { get; set; } = string.Empty;
     public required string PhoneNumber
     {
         get;
@@ -136,7 +138,7 @@ public class Employee
                 "Expected salary cannot be a negative amount.");
     }
 
-    public string PasswordHash { get; set; } = string.Empty;
+
 
     public int TotalApplicationCount => JobApplications?.Count ?? 0;
     public JobCategory JobCategory { get; set; }

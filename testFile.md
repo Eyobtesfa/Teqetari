@@ -72,3 +72,85 @@
 ],
 "jobCategory": 1
 }
+
+AUTH TEST FILES
+
+{
+"phoneNumber": "0911934567",
+"password": "Password123!",
+"email": "employee@example.com",
+"firstName": "Abebe",
+"lastName": "Bikila",
+"nationalIdNumber": "1234567890123456",
+"city": "Addis Ababa",
+"subCity": "Bole",
+"woreda": "03",
+"yearsOfExperience": 3,
+"expectedSalary": 12000.00,
+"jobCategory": "Cook",
+"skills": [
+"Culinary",
+"Deep Cleaning",
+"First Aid"
+]
+}
+
+{
+"$type": "Household",
+"employerType": 1,
+"email": "household2.employer@example.com",
+"password": "Password123!",
+"phoneNumber": "0911000111",
+"firstName": "Abebe",
+"lastName": "Tessema",
+"nationalIdNumber": "1232456798765432",
+"numberOfFamilyMembers": 4,
+"hasPets": true,
+"city": "Addis Ababa",
+"subCity": "Bole",
+"woreda": "03",
+"specialInstruction": [
+"Prefer non-smoking staff",
+"Must be comfortable around a dog"
+]
+}
+
+{
+"$type": "PrivateCompany",
+"employerType": 2,
+"email": "hr@techsolutions.com",
+"password": "Password123!",
+"phoneNumber": "0911000222",
+"companyName": "Tech Solutions PLC",
+"industry": "ManufacturingAndLogistics",
+"tradeLicenseNumber": "TL-2026-9988",
+"taxRegistrationNumber": "TIN-11223344",
+"contactPersonName": "Kebede Alemu",
+"contactPersonRole": "HR Manager",
+"companySize": 50,
+"city": "Addis Ababa",
+"subCity": "Kirkos",
+"woreda": "05",
+"specialInstruction": [
+"Requires official trade license verification upon contract signing"
+]
+}
+
+{
+"$type": "GovernmentOrganization",
+"employerType": 3,
+"email": "info@ministry.gov.et",
+"password": "Password123!",
+"phoneNumber": "0911000333",
+"organizationName": "Ministry of Innovation and Technology",
+"sector": "AdministrativeAndMinistries",
+"department": "Human Resource Management Division",
+"authorizedOfficerName": "Dawit Haile",
+"officialLetterRefNumber": "GOV-REF-2026-0412",
+"city": "Addis Ababa",
+"subCity": "Arada",
+"woreda": "01",
+"specialInstruction": [
+"Requires official department seal and clearance paperwork"
+]
+}

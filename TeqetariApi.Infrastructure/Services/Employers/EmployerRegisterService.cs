@@ -82,7 +82,7 @@ public class EmployerRegisterService(TeqetariDbContext context, ILogger<Employer
             _ => throw new ArgumentException("Unsupported employer payload type.", nameof(create))
         };
 
-        employer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(create.Password, workFactor: 12);
+        //employer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(create.Password, workFactor: 12);
         context.Employers.Add(employer);
         await context.SaveChangesAsync(ct);
         logger.LogInformation("Registered Employer profile for {EmployerId} as {EmployerType}.", employer.Id, employer.Type);

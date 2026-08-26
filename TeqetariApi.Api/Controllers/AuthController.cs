@@ -1,93 +1,89 @@
 using Microsoft.AspNetCore.Mvc;
-using TeqetariApi.Application.DTOs.Response.Employer;
 using TeqetariApi.Application.Interfaces;
+// Update these using directives to point to where your Create DTOs live
+using TeqetariApi.Application.DTOs;
+using TeqetariApi.Application.DTOs.Create.Employee;
+using TeqetariApi.Application.DTOs.Create.Employer;
 
-namespace TeqetariApi.Api.Controllers;
-
-public record LoginRequestDto(string PhoneNumber, string Password);
-public record UserProfileDto(string DisplayName, string Role, int Id);
+namespace TeqetariApi.Web.Controllers;
 
 [ApiController]
-[Route("api/auth")]
-public class AuthController(
-    IRegisterEmployeeService employeeService,
-    IRegisterEmployerService employerService) : ControllerBase
+[Route("api/[controller]")]
+[Produces("application/json")]
+public class AuthController(IAuthService authService) : ControllerBase
 {
+    /// <summary>
+    /// Registers a new Employee using Phone Number and Password.
+    /// </summary>
+    [HttpPost("register/employee")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> RegisterEmployee([FromBody] CreateEmployeeDto dto)
+    {
+        var (success, errors) = await authService.RegisterEmployeeAsync(dto);
+        if (!success)
+        {
+            return BadRequest(new { errors });
+        }
+
+        return Ok(new { message = "Employee account created successfully." });
+    }
+
+    /// <summary>
+    /// Registers a new Employer (Household, Private Company, or Government Organization) using Email and Password.
+    /// Supports polymorphic payload types.
+    /// </summary>
+    [HttpPost("register/employer")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> RegisterEmployer([FromBody] CreateEmployerDto dto)
+    {
+        var (success, errors) = await authService.RegisterEmployerAsync(dto);
+        if (!success)
+        {
+            return BadRequest(new { errors });
+        }
+
+        return Ok(new { message = "Employer account created successfully." });
+    }
+
+    /// <summary>
+    /// Authenticates Employees (via Phone Number) or Employers (via Email) and issues JWT access and refresh tokens.
+    /// </summary>
     [HttpPost("login")]
-    public async Task<IActionResult> Login(
-        [FromBody] LoginRequestDto request,
-        [FromServices] IWebHostEnvironment env,
-        CancellationToken ct)
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status423Locked)]
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var employee = await employeeService.GetEmployeeByPhoneAsync(request.PhoneNumber, ct);
-        if (employee is not null && BCrypt.Net.BCrypt.Verify(request.Password, employee.PasswordHash))
+        var (success, response, errorMessage, statusCode) = await authService.LoginAsync(dto);
+        if (!success)
         {
-            IssueAuthCookies(employee.Id, "Employee", env);
-            return Ok(new UserProfileDto($"{employee.FirstName} {employee.LastName}", "Employee", employee.Id));
-        }
-
-        var employer = await employerService.GetEmployerByPhoneAsync(request.PhoneNumber, ct);
-        if (employer is not null && BCrypt.Net.BCrypt.Verify(request.Password, employer.PasswordHash))
-        {
-            IssueAuthCookies(employer.Id, "Employer", env);
-            return Ok(new UserProfileDto(employer.DisplayName, "Employer", employer.Id));
-        }
-
-        return Unauthorized(new { detail = "Invalid phone number or password." });
-    }
-
-    [HttpGet("me")]
-    public async Task<IActionResult> GetCurrentUser(CancellationToken ct)
-    {
-        if (!Request.Cookies.TryGetValue("teqetari_id", out var idValue) ||
-            !Request.Cookies.TryGetValue("teqetari_role", out var role) ||
-            !int.TryParse(idValue, out var id))
-        {
-            return Unauthorized(new { detail = "Session expired or missing." });
-        }
-
-        if (role == "Employee")
-        {
-            var employee = await employeeService.GetEmployeeByIdAsync(id, ct);
-            return employee is null
-                ? Unauthorized()
-                : Ok(new UserProfileDto($"{employee.FirstName} {employee.LastName}", "Employee", employee.Id));
-        }
-        else
-        {
-            var employer = await employerService.GetEmployerByIdAsync(id, ct);
-            if (employer is null) return Unauthorized();
-
-            var displayName = employer switch
+            return statusCode switch
             {
-                HouseholdResponseDto h => h.FullName,
-                PrivateCompanyResponseDto c => c.CompanyName,
-                GovernmentOrganizationResponseDto g => g.OrganizationName,
-                _ => "Employer"
+                StatusCodes.Status423Locked => StatusCode(StatusCodes.Status423Locked, new { detail = errorMessage }),
+                _ => Unauthorized(new { detail = errorMessage })
             };
-
-            return Ok(new UserProfileDto(displayName, "Employer", employer.Id));
         }
+
+        return Ok(response);
     }
 
-    [HttpPost("logout")]
-    public IActionResult Logout()
+    /// <summary>
+    /// Rotates a refresh token to obtain a new Access Token and Refresh Token pair.
+    /// Implements reuse detection to revoke all active sessions if an already-used token is submitted.
+    /// </summary>
+    [HttpPost("refresh")]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
     {
-        Response.Cookies.Delete("teqetari_id");
-        Response.Cookies.Delete("teqetari_role");
-        return Ok();
-    }
-
-    private void IssueAuthCookies(int userId, string role, IWebHostEnvironment env)
-    {
-        var options = new CookieOptions
+        var (success, response, errorMessage) = await authService.RefreshTokenAsync(dto);
+        if (!success)
         {
-            HttpOnly = true,
-            Secure = !env.IsDevelopment(),
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddHours(8)
-        };
-        Response.Cookies.Append("teqetari_id", userId.ToString(), options);
-        Response.Cookies.Append("teqetari_role", role, options);
+            return Unauthorized(new { detail = errorMessage });
+        }
+
+        return Ok(response);
     }
 }

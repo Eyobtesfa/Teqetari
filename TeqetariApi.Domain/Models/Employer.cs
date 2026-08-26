@@ -6,6 +6,8 @@ namespace TeqetariApi.Domain.Models;
 public abstract class Employer
 {
     public int Id { get; set; }
+
+    public string AppUserId { get; set; } = string.Empty;
     public required EmployerType Type { get; set; }
     public abstract string DisplayName { get; }
     public required string Email
@@ -58,7 +60,7 @@ public abstract class Employer
                 value ?? string.Empty,
                 "Woreda cannot be empty.");
     }
-    public string PasswordHash { get; set; } = string.Empty;
+
     public List<string>? SpecialInstruction { get; set; }
     public ICollection<JobPost> JobPosts { get; set; } = new List<JobPost>();
     public ICollection<PlacementContract> PlacementContracts { get; set; } = new List<PlacementContract>();
