@@ -50,7 +50,7 @@ public class JobPost
                 value,
                 "Offered salary max cannot be less than offered salary min.");
     }
-    public bool AccommodationProvided { get; set; } = false;
+    public required WorkMode WorkingMode { get; set; }
     public int MinimumExperienceYears
     {
         get;
@@ -78,4 +78,10 @@ public class JobPost
 
     public ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
 
+}
+
+public enum WorkMode
+{
+    DayLaborer = 1,   // Temelalash (ተመላላሽ) - Daily commute / part-time / non-live-in
+    Permanent = 2     // Quami (ቋሚ) - Full-time / live-in / long-term contract
 }

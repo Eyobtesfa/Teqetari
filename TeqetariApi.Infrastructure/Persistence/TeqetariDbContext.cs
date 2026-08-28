@@ -18,6 +18,7 @@ public class TeqetariDbContext : IdentityDbContext<AppUser>
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
     public DbSet<JobPost> JobPosts => Set<JobPost>();
     public DbSet<PlacementContract> PlacementContracts => Set<PlacementContract>();
+    public DbSet<HireRequest> HireRequests => Set<HireRequest>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
 
