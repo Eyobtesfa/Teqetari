@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TeqetariApi.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using TeqetariApi.Infrastructure.Persistence;
 namespace TeqetariApi.Infrastructure.Migrations
 {
     [DbContext(typeof(TeqetariDbContext))]
-    partial class TeqetariDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260828221219_UpdatedJobPostAndHireRequest")]
+    partial class UpdatedJobPostAndHireRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

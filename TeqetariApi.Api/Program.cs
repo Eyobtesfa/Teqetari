@@ -26,7 +26,7 @@ builder.Services.AddScoped<IRegisterEmployeeService, EmployeeRegisterService>();
 builder.Services.AddScoped<IRegisterEmployerService, EmployerRegisterService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPostJobService, PostJobService>();
+builder.Services.AddScoped<IPostJobService, JobPostService>();
 builder.Services.AddDbContext<TeqetariDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("TeqetariDatabase")));
 

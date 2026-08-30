@@ -5,7 +5,7 @@ namespace TeqetariApi.Application.DTOs.Create.JobPost;
 
 public record CreateJobPostDto
 {
-    public required int EmployerId { get; init; }
+
     public required string Title { get; init; }
     public required string Description { get; init; }
     public required JobCategory Category { get; init; }

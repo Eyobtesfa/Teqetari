@@ -57,6 +57,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         var (success, response, errorMessage, statusCode) = await authService.LoginAsync(dto);
+
         if (!success)
         {
             return statusCode switch

@@ -166,7 +166,7 @@ public class AuthService(
             },
             _ => null
         };
-        
+
         if (employer is null)
         {
             await tranaction.RollbackAsync();
@@ -187,12 +187,12 @@ public class AuthService(
 
         await tranaction.CommitAsync();
         var employerName = employer switch
-{
-    Household h => $"{h.FirstName} {h.LastName}",
-    PrivateCompany c => c.CompanyName,
-    GovernmentOrganization g => g.OrganizationName,
-    _ => "Unknown"
-};
+        {
+            Household h => $"{h.FirstName} {h.LastName}",
+            PrivateCompany c => c.CompanyName,
+            GovernmentOrganization g => g.OrganizationName,
+            _ => "Unknown"
+        };
 
         logger.LogInformation(
     "Employer {EmployerName} ({EmployerType}, UserId: {UserId}) registered successfully.",
@@ -207,16 +207,23 @@ public class AuthService(
                 ?? await userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == dto.Identifier);
 
         if (user == null)
+        {
+            logger.LogWarning("Login failed: no user found for identifier {Identifier}.", dto.Identifier);
             return (false, null, "Invalid credentials.", 401);
+        }
+
 
         // 2. Lockout Check[cite: 1]
         if (await userManager.IsLockedOutAsync(user))
+        {
+            logger.LogWarning("Login blocked: user {UserId} is locked out.", user.Id);
             return (false, null, "Account locked due to multiple failed attempts. Try again later.", 423);
-
+        }
         // 3. Password Verification[cite: 1]
         if (!await userManager.CheckPasswordAsync(user, dto.Password))
         {
             await userManager.AccessFailedAsync(user);
+            logger.LogWarning("Login failed: invalid password for user {UserId}.", user.Id);
             return (false, null, "Invalid credentials.", 401);
         }
 
@@ -228,6 +235,9 @@ public class AuthService(
 
         // 4. Issue Tokens[cite: 2]
         var (accessToken, refreshTokenValue) = await IssueTokensAsync(user);
+        logger.LogInformation(
+        "User {UserId} ({UserType}) logged in successfully.",
+        user.Id, user.UserType);
 
         return (true, new AuthResponseDto(accessToken, refreshTokenValue), null, null);
     }
@@ -273,9 +283,9 @@ public class AuthService(
     {
         var roles = await userManager.GetRolesAsync(user);
         var accessToken = tokenService.GenerateJwt(user, roles);
- 
+
         var refreshTokenValue = GenerateSecureToken();
- 
+
         var refreshToken = new RefreshToken
         {
             Token = HashToken(refreshTokenValue), // store hash, not the raw token
@@ -284,10 +294,10 @@ public class AuthService(
             IsUsed = false,
             IsRevoked = false
         };
- 
+
         context.RefreshTokens.Add(refreshToken);
         await context.SaveChangesAsync();
- 
+
         // Return the raw (unhashed) value to the caller — this is the only time it exists
         // outside the client's hands; the DB only ever sees the hash.
         return (accessToken, refreshTokenValue);
@@ -296,7 +306,7 @@ public class AuthService(
 
     private static string GenerateSecureToken() =>
         Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
- 
+
     // CHANGED: new helper — SHA-256 hash used so raw refresh tokens are never persisted.
     private static string HashToken(string token) =>
         Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));

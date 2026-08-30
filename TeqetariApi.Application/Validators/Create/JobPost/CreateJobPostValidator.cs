@@ -8,9 +8,6 @@ public class CreateJobPostDtoValidator : AbstractValidator<CreateJobPostDto>
     public CreateJobPostDtoValidator()
     {
         // --- Foreign Keys ---
-        RuleFor(x => x.EmployerId)
-            .GreaterThan(0)
-            .WithMessage("EmployerId must be a valid positive integer.");
 
         // --- Text Fields ---
         RuleFor(x => x.Title)

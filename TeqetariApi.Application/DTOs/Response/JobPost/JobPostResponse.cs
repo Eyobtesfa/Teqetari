@@ -1,4 +1,5 @@
 using TeqetariApi.Domain.Enums;
+using TeqetariApi.Domain.Models;
 
 namespace TeqetariApi.Application.DTOs.Response.JobPost;
 
@@ -13,7 +14,7 @@ public record JobPostResponseDto
     public required decimal OfferedSalaryMin { get; set; }
     public required decimal OfferedSalaryMax { get; set; }
     public required string Location { get; set; }
-    public bool AccommodationProvided { get; set; } = false;
+    public required WorkMode WorkMode { get; set; }
     public required int MinimumExperienceYears { get; set; }
     public required DateTime ExpirationDate { get; set; }
     public required DateTime PostedAt { get; set; }
