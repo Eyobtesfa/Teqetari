@@ -6,14 +6,64 @@ using TeqetariApi.Application.DTOs.Response.Employee;
 //using TeqetariApi.Application.DTOs.Create.ProfilePicture;
 using TeqetariApi.Domain.Models;
 using TeqetariApi.Application.Interfaces;
+using TeqetariApi.Application.DTOs;
 
 namespace TeqetariApi.Infrastructure.Services.Employees;
 
-public class EmployeeRegisterService(
+public class EmployeeService(
     TeqetariDbContext context,
-    ILogger<EmployeeRegisterService> logger
-    ) : IRegisterEmployeeService
+    ILogger<EmployeeService> logger
+    ) : IEmployeeService
 {
+
+    public async Task<(bool Success, IEnumerable<EmployeeFilterResponseDto> Result, IEnumerable<string> Errors)> GetEmployeesAsync(EmployeeFilterDto filter, CancellationToken ct)
+    {
+        var query = context.Employees.AsQueryable();
+
+        if (filter.Category is not null)
+            query = query.Where(e => e.JobCategory == filter.Category);
+        if (!string.IsNullOrWhiteSpace(filter.City))
+            query = query.Where(e => e.City == filter.City);
+        if (filter.MinYearsOfExperience is not null)
+            query = query.Where(e => e.YearsOfExperience >= filter.MinYearsOfExperience);
+        if (filter.MaxExpectedSalary is not null)
+            query = query.Where(e => e.ExpectedSalary <= filter.MaxExpectedSalary);
+        if (filter.MinExpectedSalary is not null)
+            query = query.Where(e => e.ExpectedSalary >= filter.MinExpectedSalary);
+
+        var employees = await query
+            .OrderByDescending(e => e.Id)
+            .Select(e => new EmployeeFilterResponseDto
+            {
+                Id = e.Id,
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                City = e.City,
+                SubCity = e.SubCity,
+                Woreda = e.Woreda,
+                YearsOfExperience = e.YearsOfExperience,
+                ExpectedSalary = e.ExpectedSalary,
+                JobCategory = e.JobCategory,
+                Skills = e.Skills!,
+                RegisteredAt = e.RegisteredAt,
+                IsAvailable = e.IsAvailable
+            }).ToListAsync();
+
+        logger.LogInformation(
+            "Employee search returned {Count} result(s) (Category: {Category}, City: {City}).", employees.Count, filter.Category, filter.City
+        );
+
+        return (true, employees, Enumerable.Empty<string>());
+    }
+
+
+
+
+
+
+
+
+
     public async Task<IEnumerable<CreateEmployeeResponseDto>> GetAllEmployeesAsync(CancellationToken ct)
     {
         var employees = await context.Employees

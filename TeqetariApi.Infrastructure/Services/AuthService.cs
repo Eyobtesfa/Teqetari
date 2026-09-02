@@ -28,7 +28,7 @@ public class AuthService(
             UserName = dto.PhoneNumber,
             PhoneNumber = dto.PhoneNumber,
             Email = dto.Email,
-            UserType = "Employee"
+            UserType = "EMPLOYEE"
         };
 
         var result = await userManager.CreateAsync(user, dto.Password);
@@ -37,8 +37,8 @@ public class AuthService(
             return (false, result.Errors.Select(e => e.Description));
         }
 
-        await EnsureRoleExistsAsync("Employee");
-        var roleResult = await userManager.AddToRoleAsync(user, "Employee");
+        await EnsureRoleExistsAsync("EMPLOYEE");
+        var roleResult = await userManager.AddToRoleAsync(user, "EMPLOYEE");
         if (!roleResult.Succeeded)
         {
             await transaction.RollbackAsync();
@@ -92,7 +92,7 @@ public class AuthService(
             UserName = dto.Email,
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
-            UserType = "Employer"
+            UserType = "EMPLOYER"
         };
 
         var result = await userManager.CreateAsync(user, dto.Password);
@@ -101,8 +101,8 @@ public class AuthService(
             return (false, result.Errors.Select(e => e.Description));
         }
 
-        await EnsureRoleExistsAsync("Employer");
-        var roleResult = await userManager.AddToRoleAsync(user, "Employer");
+        await EnsureRoleExistsAsync("EMPLOYER");
+        var roleResult = await userManager.AddToRoleAsync(user, "EMPLOYER");
         if (!roleResult.Succeeded)
         {
             await tranaction.RollbackAsync();

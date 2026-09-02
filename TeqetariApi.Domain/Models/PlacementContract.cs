@@ -8,12 +8,16 @@ public class PlacementContract
     public int Id { get; set; }
     public int EmployerId { get; set; }
     public int EmployeeId { get; set; }
-    public int JobPostId { get; set; }
+
     public Employer Employer { get; set; } = null!;
     public Employee Employee { get; set; } = null!;
-    public JobPost JobPost { get; set; } = null!;
+
+    public int? HireRequestId { get; set; }
+    public HireRequest? HireRequest { get; set; }
+    public int? JobApplicationId { get; set; }
+    public JobApplication? JobApplication { get; set; }
     public required DateTime StartDate { get; set; } = DateTime.UtcNow;
-    public required DateTime EndDate
+    public DateTime EndDate
     {
         get;
         set => field = (value > StartDate)
