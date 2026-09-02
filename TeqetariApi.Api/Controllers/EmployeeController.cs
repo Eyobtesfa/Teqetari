@@ -3,6 +3,8 @@ using TeqetariApi.Application.DTOs.Create.Employee;
 using TeqetariApi.Infrastructure.Services.Employees;
 using TeqetariApi.Application.Interfaces;
 using TeqetariApi.Application.DTOs.Response.Employee;
+using Microsoft.AspNetCore.Authorization;
+using TeqetariApi.Application.DTOs;
 
 
 
@@ -10,15 +12,33 @@ namespace TeqetariApi.Api.Controllers;
 
 [ApiController]
 [Route("api/employees")]
-public class EmployeeController(IRegisterEmployeeService registerEmployee) : ControllerBase
+[Authorize(Roles = "EMPLOYER")]
+public class EmployeeController(IEmployeeService employeeService) : ControllerBase
 
 {
+
+
+    [HttpGet]
+    public async Task<IActionResult> GetEmployees([FromQuery] EmployeeFilterDto filter, CancellationToken ct)
+    {
+        var (success, result, errors) = await employeeService.GetEmployeesAsync(filter, ct);
+
+        if (!success)
+            return BadRequest(new { errors });
+
+        return Ok(result);
+    }
+
+
+
+
+
     [HttpGet("{id:int}", Name = nameof(GetEmployeeById))]
     public async Task<ActionResult> GetEmployeeById(
         int id,
         CancellationToken ct)
     {
-        var employee = await registerEmployee.GetEmployeeByIdAsync(id, ct);
+        var employee = await employeeService.GetEmployeeByIdAsync(id, ct);
 
         if (employee is null)
         {
@@ -27,33 +47,11 @@ public class EmployeeController(IRegisterEmployeeService registerEmployee) : Con
 
         return Ok(employee);
     }
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<CreateEmployeeResponseDto>>> GetAllEmployees(CancellationToken ct)
-    {
-        var employees = await registerEmployee.GetAllEmployeesAsync(ct);
-        return Ok(employees);
-    }
-    [HttpPost]
-    public async Task<IActionResult> RegisterEmployeeAsync([FromBody] CreateEmployeeDto dto, CancellationToken ct)
+    //[HttpGet]
+    //public async Task<ActionResult<IEnumerable<CreateEmployeeResponseDto>>> GetAllEmployees(CancellationToken ct)
+    //{
+    //   var employees = await employeeService.GetAllEmployeesAsync(ct);
+    //  return Ok(employees);
+    // }
 
-
-    {
-        if (await registerEmployee.EmployeeExistsAsync(dto.NationalIdNumber, ct))
-
-
-        {
-            return Conflict(new ProblemDetails
-
-            {
-                Title = "Employee with the provided National ID Number already exists.",
-                Detail = $"An employee with National ID Number {dto.NationalIdNumber} already exists.",
-                Status = StatusCodes.Status409Conflict
-            });
-        }
-        var result = await registerEmployee.RegisterEmployeeAsync(dto, ct);
-        return CreatedAtAction(
-            nameof(GetEmployeeById),
-            new { id = result.Id },
-            result);
-    }
 }

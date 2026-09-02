@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeqetariApi.Application.DTOs.Create.JobPost;
 using TeqetariApi.Application.Interfaces;
@@ -7,6 +8,7 @@ namespace TeqetariApi.Api.Controllers;
 
 [ApiController]
 [Route("api/postJob")]
+[Authorize(Roles = "EMPLOYER")]
 public class JobPostController(IPostJobService postJob) : ControllerBase
 {
     [HttpPost]
