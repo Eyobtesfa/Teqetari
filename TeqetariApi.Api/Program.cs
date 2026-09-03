@@ -23,7 +23,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-builder.Services.AddScoped<IRegisterEmployerService, EmployerRegisterService>();
+builder.Services.AddScoped<IEmployerService, EmployerService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPostJobService, JobPostService>();

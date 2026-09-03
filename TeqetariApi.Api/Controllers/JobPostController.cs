@@ -8,10 +8,11 @@ namespace TeqetariApi.Api.Controllers;
 
 [ApiController]
 [Route("api/postJob")]
-[Authorize(Roles = "EMPLOYER")]
+[Authorize]
 public class JobPostController(IPostJobService postJob) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Roles = "EMPLOYER")]
     public async Task<IActionResult> PostJob([FromBody] CreateJobPostDto dto, CancellationToken ct)
     {
         var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -23,6 +24,7 @@ public class JobPostController(IPostJobService postJob) : ControllerBase
         return Ok(result);
     }
     [HttpGet("mine")]
+    [Authorize(Roles = "EMPLOYER")]
     public async Task<IActionResult> GetMyJobs(CancellationToken ct)
     {
         var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -32,5 +34,12 @@ public class JobPostController(IPostJobService postJob) : ControllerBase
             return BadRequest(new { errors });
 
         return Ok(result);
+    }
+    [HttpGet("all")]
+    [Authorize(Roles = "EMPLOYEE")]
+    public async Task<IActionResult> GetAllJobs(CancellationToken ct)
+    {
+        var (success, result, errors) = await postJob.GetAllJobPostsAsync(ct);
+        return success ? Ok(result) : BadRequest(new { errors });
     }
 }
