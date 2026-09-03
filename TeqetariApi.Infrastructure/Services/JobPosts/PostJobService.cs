@@ -103,4 +103,28 @@ public class JobPostService(TeqetariDbContext context, ILogger<JobPostService> l
 
         return (true, jobs, Enumerable.Empty<string>());
     }
+    public async Task<(bool Success, IEnumerable<JobPostResponseDto> Result, IEnumerable<string> Errors)> GetAllJobPostsAsync(CancellationToken ct)
+    {
+        var jobs = await context.JobPosts
+            .OrderByDescending(j => j.PostedAt)
+            .Select(j => new JobPostResponseDto
+            {
+                Id = j.Id,
+                EmployerId = j.EmployerId,
+                Title = j.Title,
+                Description = j.Description,
+                Category = j.Category,
+                RequiredSkills = j.RequiredSkills,
+                OfferedSalaryMin = j.OfferedSalaryMin,
+                OfferedSalaryMax = j.OfferedSalaryMax,
+                Location = j.Location,
+                WorkMode = j.WorkingMode,
+                MinimumExperienceYears = j.MinimumExperienceYears,
+                ExpirationDate = j.ExpirationDate,
+                PostedAt = j.PostedAt
+            })
+            .ToListAsync(ct);
+
+        return (true, jobs, Enumerable.Empty<string>());
+    }
 }

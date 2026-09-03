@@ -8,123 +8,21 @@ using TeqetariApi.Domain.Models;
 
 namespace TeqetariApi.Infrastructure.Services.Employers;
 
-public class EmployerRegisterService(TeqetariDbContext context, ILogger<EmployerRegisterService> logger) : IRegisterEmployerService
+public class EmployerService(TeqetariDbContext context, ILogger<EmployerService> logger) : IEmployerService
 {
-    public async Task<EmployerBaseResponseDto> RegisterEmployerAsync(CreateEmployerDto create, CancellationToken ct)
-    {
-
-        logger.LogInformation("Attempting to register employer with Email: {Email}", create.Email);
-
-        var exists = await context.Employers
-            .AnyAsync(e => e.Email == create.Email || e.PhoneNumber == create.PhoneNumber, ct);
-
-        if (exists)
-        {
-            logger.LogWarning("Employer registration failed: Email {Email} or Phone {PhoneNumber} already exists", create.Email, create.PhoneNumber);
-            throw new InvalidOperationException("An employer with this Email or Phone number already exits.");
-        }
-
-        Employer employer = create switch
-        {
-            CreateHouseholdEmployerDto household => new Household
-            {
-                Email = household.Email,
-                Type = household.EmployerType,
-                PhoneNumber = household.PhoneNumber,
-                City = household.City,
-                SubCity = household.SubCity,
-                Woreda = household.Woreda,
-                SpecialInstruction = household.SpecialInstruction,
-
-                FirstName = household.FirstName,
-                LastName = household.LastName,
-                NationalIdNumber = household.NationalIdNumber,
-                NumberOfFamilyMembers = household.NumberOfFamilyMembers,
-                HasPets = household.HasPets ?? false
-            },
-
-            CreateCompanyEmployerDto company => new PrivateCompany
-            {
-                Email = company.Email,
-                Type = company.EmployerType,
-                PhoneNumber = company.PhoneNumber,
-                City = company.City,
-                SubCity = company.SubCity,
-                Woreda = company.Woreda,
-                SpecialInstruction = company.SpecialInstruction,
-
-                Industry = company.Industry,
-                CompanyName = company.CompanyName,
-                TradeLicenseNumber = company.TradeLicenseNumber,
-                TaxRegistrationNumber = company.TaxRegistrationNumber,
-                ContactPersonName = company.ContactPersonName,
-                ContactPersonRole = company.ContactPersonRole,
-                Size = company.CompanySize
-            },
-
-            CreateGovernmentEmployerDto government => new GovernmentOrganization
-            {
-                Email = government.Email,
-                Type = government.EmployerType,
-                PhoneNumber = government.PhoneNumber,
-                City = government.City,
-                SubCity = government.SubCity,
-                Woreda = government.Woreda,
-                SpecialInstruction = government.SpecialInstruction,
-
-                OrganizationName = government.OrganizationName,
-                Sector = government.Sector,
-                Department = government.Department,
-                AuthorizedOfficerName = government.AuthorizedOfficerName,
-                OfficialLetterRefNumber = government.OfficialLetterRefNumber
-            },
-
-            _ => throw new ArgumentException("Unsupported employer payload type.", nameof(create))
-        };
-
-        //employer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(create.Password, workFactor: 12);
-        context.Employers.Add(employer);
-        await context.SaveChangesAsync(ct);
-        logger.LogInformation("Registered Employer profile for {EmployerId} as {EmployerType}.", employer.Id, employer.Type);
-        return MapToResponseDto(employer);
-
-
-    }
-
-
-    public async Task<EmployerBaseResponseDto?> GetEmployerByIdAsync(int id, CancellationToken ct)
-    {
-        logger.LogInformation("Fetching employer by ID: {EmployerId}", id);
-
-
-        var employer = await context.Employers
-            .Include(e => e.JobPosts)
-            .Include(e => e.PlacementContracts)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
-
-        if (employer is null)
-        {
-            logger.LogWarning("Employer with ID {EmployerId} was not found.", id);
-            return null;
-        }
-
-        return MapToResponseDto(employer);
-    }
-
-    public async Task<List<EmployerBaseResponseDto>> GetAllEmployersAsync(CancellationToken ct)
+    public async Task<(bool Success, IEnumerable<EmployerBaseResponseDto> Result, IEnumerable<string> Errors)> GetEmployersAsync(CancellationToken ct)
     {
         var employers = await context.Employers
-            .AsNoTracking()
             .Include(e => e.JobPosts)
             .Include(e => e.PlacementContracts)
-            .ToListAsync();
+            .ToListAsync(ct);
 
-        return employers.Select(MapToResponseDto).ToList();
+        logger.LogInformation("Retrieved {Count} employers from the database.", employers.Count);
+
+        return (true, employers.Select(MapToResponseDto), Enumerable.Empty<string>());
     }
 
-
-    private static EmployerBaseResponseDto MapToResponseDto(Employer employer) => employer switch
+    private static EmployerBaseResponseDto MapToResponseDto(Employer e) => e switch
     {
         Household h => new HouseholdResponseDto
         {
@@ -136,40 +34,34 @@ public class EmployerRegisterService(TeqetariDbContext context, ILogger<Employer
             SubCity = h.SubCity,
             Woreda = h.Woreda,
             SpecialInstruction = h.SpecialInstruction,
-            JobPostsCount = h.JobPosts.Count,
-            PlacementContractsCount = h.PlacementContracts.Count,
-
-
+            JobPostsCount = h.JobPosts?.Count ?? 0,
+            PlacementContractsCount = h.PlacementContracts?.Count ?? 0,
             FirstName = h.FirstName,
             LastName = h.LastName,
             NationalIdNumber = h.NationalIdNumber,
             NumberOfFamilyMembers = h.NumberOfFamilyMembers,
             HasPets = h.HasPets
         },
-
-        PrivateCompany p => new PrivateCompanyResponseDto
+        PrivateCompany c => new PrivateCompanyResponseDto
         {
-            Id = p.Id,
-            Type = p.Type,
-            Email = p.Email,
-            PhoneNumber = p.PhoneNumber,
-            City = p.City,
-            SubCity = p.SubCity,
-            Woreda = p.Woreda,
-            SpecialInstruction = p.SpecialInstruction,
-            JobPostsCount = p.JobPosts.Count,
-            PlacementContractsCount = p.PlacementContracts.Count,
-
-            Industry = p.Industry,
-            CompanyName = p.CompanyName,
-            TradeLicenseNumber = p.TradeLicenseNumber,
-            TaxRegistrationNumber = p.TaxRegistrationNumber,
-            ContactPersonName = p.ContactPersonName,
-            ContactPersonRole = p.ContactPersonRole,
-            Size = p.Size
-
+            Id = c.Id,
+            Type = c.Type,
+            Email = c.Email,
+            PhoneNumber = c.PhoneNumber,
+            City = c.City,
+            SubCity = c.SubCity,
+            Woreda = c.Woreda,
+            SpecialInstruction = c.SpecialInstruction,
+            JobPostsCount = c.JobPosts?.Count ?? 0,
+            PlacementContractsCount = c.PlacementContracts?.Count ?? 0,
+            Industry = c.Industry,
+            CompanyName = c.CompanyName,
+            TradeLicenseNumber = c.TradeLicenseNumber,
+            TaxRegistrationNumber = c.TaxRegistrationNumber,
+            ContactPersonName = c.ContactPersonName,
+            ContactPersonRole = c.ContactPersonRole,
+            Size = c.Size
         },
-
         GovernmentOrganization g => new GovernmentOrganizationResponseDto
         {
             Id = g.Id,
@@ -180,22 +72,15 @@ public class EmployerRegisterService(TeqetariDbContext context, ILogger<Employer
             SubCity = g.SubCity,
             Woreda = g.Woreda,
             SpecialInstruction = g.SpecialInstruction,
-            JobPostsCount = g.JobPosts.Count,
-            PlacementContractsCount = g.PlacementContracts.Count,
-
+            JobPostsCount = g.JobPosts?.Count ?? 0,
+            PlacementContractsCount = g.PlacementContracts?.Count ?? 0,
             OrganizationName = g.OrganizationName,
             Sector = g.Sector,
             Department = g.Department,
             AuthorizedOfficerName = g.AuthorizedOfficerName,
             OfficialLetterRefNumber = g.OfficialLetterRefNumber
         },
-        _ => throw new InvalidOperationException("Unknown entity type.")
+        _ => throw new InvalidOperationException($"Unsupported employer type: {e.GetType().Name}")
     };
-
-    public async Task<Employer?> GetEmployerByPhoneAsync(string phoneNumber, CancellationToken ct)
-    {
-        return await context.Employers
-            .FirstOrDefaultAsync(e => e.PhoneNumber == phoneNumber, ct);
-    }
 
 }

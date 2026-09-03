@@ -8,4 +8,5 @@ public interface IPostJobService
 {
     Task<(bool Success, JobPostResponseDto? result, IEnumerable<string> Errors)> PostJobAsync(string appUserId, CreateJobPostDto create, CancellationToken ct);
     Task<(bool Success, IEnumerable<JobPostResponseDto> Result, IEnumerable<string> Errors)> GetMyJobsAsync(string appUserId, CancellationToken ct);
+    Task<(bool Success, IEnumerable<JobPostResponseDto> Result, IEnumerable<string> Errors)> GetAllJobPostsAsync(CancellationToken ct);
 }
