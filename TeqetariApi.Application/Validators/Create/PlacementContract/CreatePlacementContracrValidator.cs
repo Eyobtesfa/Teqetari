@@ -10,7 +10,7 @@ public class CreatePlacementContractValidator : AbstractValidator<CreatePlacemen
     {
         RuleFor(x => x.EmployerId).NotNull().GreaterThan(0);
         RuleFor(x => x.EmployeeId).NotNull().GreaterThan(0);
-        RuleFor(x => x.JobPostId).NotNull().GreaterThan(0);
+        //RuleFor(x => x.JobPostId).NotNull().GreaterThan(0);
 
         RuleFor(x => x.StartDate)
             .NotNull()

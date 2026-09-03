@@ -17,10 +17,11 @@ public class PlacementContract
     public int? JobApplicationId { get; set; }
     public JobApplication? JobApplication { get; set; }
     public required DateTime StartDate { get; set; } = DateTime.UtcNow;
-    public DateTime EndDate
+    private DateTime? _endDate;
+    public DateTime? EndDate
     {
-        get;
-        set => field = (value > StartDate)
+        get => _endDate;
+        set => _endDate = (value is null || value > StartDate)
             ? value
             : throw new InvalidModelFieldException(
                 nameof(EndDate),
