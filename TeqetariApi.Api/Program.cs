@@ -12,6 +12,10 @@ using TeqetariApi.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TeqetariApi.Infrastructure.Services.Notifications;
+using Microsoft.AspNetCore.SignalR;
+using TeqetariApi.Api;
+using TeqetariApi.Application.Hubs;
 
 
 
@@ -22,12 +26,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<IUserIdProvider, NameIdentifierUserIdProvider>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IEmployerService, EmployerService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPostJobService, JobPostService>();
 builder.Services.AddScoped<IHireRequestService, HireRequestService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddDbContext<TeqetariDbContext>(options =>
 options.UseNpgsql(builder.Configuration.GetConnectionString("TeqetariDatabase")));
 
@@ -61,6 +67,17 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                context.Token = accessToken;
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -100,9 +117,13 @@ builder.Services.AddControllers()
         );
     });
 
+builder.Services.AddSignalR();
+
+
 var app = builder.Build();
 
 
+app.MapHub<NotificationHub>("/hubs/notifications");
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
